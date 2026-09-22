@@ -67,21 +67,55 @@ The separation of front end, back end, and database layers is a stated non-funct
 
 ## Getting started
 
-> The application scaffolding is not yet in place. These steps will apply once `client/` and `server/` exist.
+You need [Node.js](https://nodejs.org) 20 or newer and a MongoDB database — either [MongoDB Atlas](https://www.mongodb.com/atlas) (free tier, nothing to install) or a local `mongod`.
 
 ```bash
-# clone
 git clone https://github.com/keyyum/findorm.git
 cd findorm
-
-# back end
-cd server && npm install && cp .env.example .env && npm run dev
-
-# front end (new terminal)
-cd client && npm install && npm run dev
 ```
 
+**Back end** (terminal 1):
+
+```bash
+cd server
+npm install
+cp .env.example .env    # then fill in MONGO_URI and JWT_SECRET
+npm run dev             # http://localhost:5000
+```
+
+**Front end** (terminal 2):
+
+```bash
+cd client
+npm install
+npm run dev             # http://localhost:5173
+```
+
+Open http://localhost:5173. The page reports whether it can reach the API — if it says connected, your setup works.
+
+Requests to `/api/...` from the front end are proxied to port 5000 by Vite, so there is no CORS setup to do in development.
+
 Never commit a real `.env` file — only `.env.example` with placeholder values.
+
+## Current state
+
+Scaffolding only. Both halves build and run, and the front end can talk to the API, but **no functional requirement is implemented yet**. Each FR is an open GitHub issue — pick one up, branch from `main`, and open a pull request.
+
+Where things go:
+
+```
+server/
+├── config/      database connection
+├── models/      Mongoose schemas
+├── routes/      URL → controller mapping
+├── controllers/ request handlers
+└── middleware/  auth, validation, error handling
+
+client/src/
+├── pages/       one component per screen
+├── components/  shared UI pieces
+└── lib/         api.js — the shared axios client
+```
 
 ## Development approach
 
