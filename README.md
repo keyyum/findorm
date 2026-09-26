@@ -124,5 +124,9 @@ Agile with Scrum. Modules are built in stages: account and role management → p
 ## Documentation
 
 - [Functional and non-functional requirements](docs/requirements.md)
+- [Design decisions](docs/decisions.md) — answers to questions the requirements leave open
+- [Data model](docs/data-model.md) — collections, fields, and validation rules
+- [API specification](docs/api-spec.md) — every endpoint, who can call it, and what it returns
+- [Acceptance criteria](docs/acceptance-criteria.md) — how to check each requirement is done
 - [Project proposal](docs/proposal.md)
 - [Contributing guide](CONTRIBUTING.md)
