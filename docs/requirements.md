@@ -2,6 +2,8 @@
 
 Source of truth for what FINDorm must do. Every pull request should reference the requirement ID it implements.
 
+How each requirement is built is detailed in [decisions.md](decisions.md), [data-model.md](data-model.md), and [api-spec.md](api-spec.md). How to check it's done is in [acceptance-criteria.md](acceptance-criteria.md).
+
 ## Functional requirements
 
 | ID | Requirement | Module |
