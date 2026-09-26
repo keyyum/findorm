@@ -1,1 +1,63 @@
 @import "tailwindcss";
+
+/* FINDorm design tokens (see the Design System artifact). */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #050a18;       /* darkest navy: text, navbar */
+  --color-navy-900: #111b2e;  /* hover on primary */
+  --color-navy-800: #1c2b45;
+  --color-navy: #243a5a;      /* primary */
+  --color-steel: #3f5f85;     /* muted text */
+  --color-sky: #6a8fb8;       /* input borders, accents */
+  --color-sky-300: #9fbcd8;
+  --color-line: #d3e3f2;      /* card borders */
+  --color-mist: #ddeaf6;
+  --color-haze: #e9f2fa;      /* subtle fills */
+  --color-page: #f4f9fd;      /* page background */
+
+  --color-danger: #9c2a25;
+  --color-danger-strong: #b42318;
+  --color-danger-bg: #f7d8d5;
+  --color-success: #17664f;
+  --color-success-bg: #d3efe4;
+  --color-warning: #7a5504;
+  --color-warning-bg: #f6e6c4;
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-page text-ink font-sans; }
+  :focus-visible { outline: 2px solid var(--color-navy); outline-offset: 2px; }
+  button:not(:disabled) { cursor: pointer; }
+}
+
+@keyframes shimmer { 0% { background-position: -600px 0 } 100% { background-position: 600px 0 } }
+.skel {
+  background: linear-gradient(90deg, #e9f2fa 0%, #f4f9fd 40%, #e9f2fa 80%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+.toast-in { animation: toast-in .2s ease-out; }
+
+.hero-photo {
+  background-color: #050a18;
+  background-image:
+    linear-gradient(180deg, rgba(5,10,24,.62) 0%, rgba(5,10,24,.40) 40%, rgba(5,10,24,.92) 100%),
+    linear-gradient(110deg, rgba(36,58,90,.65) 0%, rgba(5,10,24,.10) 65%),
+    var(--hero-img);
+  background-size: cover, cover, cover;
+  background-position: center, center, center 40%;
+  background-repeat: no-repeat;
+}
+.aside-photo {
+  background-color: #050a18;
+  background-image:
+    linear-gradient(180deg, rgba(5,10,24,.80) 0%, rgba(5,10,24,.12) 20%, rgba(5,10,24,.04) 40%, rgba(5,10,24,.70) 62%, rgba(5,10,24,.96) 82%, #050a18 100%),
+    linear-gradient(140deg, rgba(36,58,90,.60) 0%, rgba(106,143,184,.12) 45%, rgba(5,10,24,.40) 100%),
+    var(--hero-img);
+  background-size: cover, cover, cover;
+  background-position: center, center, center 28%;
+  background-repeat: no-repeat;
+}
