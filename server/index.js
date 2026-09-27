@@ -5,8 +5,11 @@ import cookieParser from "cookie-parser"; // Add cookie-parser
 
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js"; // Import your new auth routes
+import userRoutes from "./routes/userRoutes.js";
 import notFound from "./middleware/notFound.js";
 import errorHandler from "./middleware/errorHandler.js";
+
+import listingRoutes from "./routes/listingRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +24,8 @@ app.get("/api/health", (req, res) => {
 
 // Mount your auth routes here
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes)
+app.use("/api/listings", listingRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
