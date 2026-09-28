@@ -106,9 +106,11 @@ export default function Home() {
 
   // A stale ?page= past the last page (e.g. after filters changed) → page 1.
   useEffect(() => {
-    if (state.status === "ready" && data.items.length === 0 && data.total > 0 && page > 1) update({ page: "" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, data]);
+  if (state.status === "ready" && data?.items?.length === 0 && data?.total > 0 && page > 1) {
+    update({ page: "" });
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [state.status, data]);
 
   return (
     <>
