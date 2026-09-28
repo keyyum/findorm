@@ -1,20 +1,19 @@
 import mongoose from "mongoose";
+import { AMENITIES, CITIES, GENDER_CATEGORIES, MAX_PHOTOS, PROPERTY_TYPES } from "../config/constants.js";
 
-// Sub-schema for photos (embedded from Cloudinary)
-const photoSchema = new mongoose.Schema(
-  {
-    url: {
-      type: String,
-      required: true,
-    },
-    publicId: {
-      type: String,
-      required: true,
-    },
-  },
-  { _id: false }
-);
+const wholeNumber = (label) => ({
+  validator: Number.isInteger,
+  message: `${label} must be a whole number.`,
+});
 
+// Sub-schema for photos (embedded from Cloudinary). Each photo keeps its own
+// _id so DELETE /api/listings/:id/photos/:photoId can find it.
+const photoSchema = new mongoose.Schema({
+  url: { type: String, required: true }, // Cloudinary secure_url
+  publicId: { type: String, required: true }, // Cloudinary public_id, needed to delete
+});
+
+// docs/data-model.md → Listing
 const listingSchema = new mongoose.Schema(
   {
     owner: {
@@ -24,86 +23,78 @@ const listingSchema = new mongoose.Schema(
     },
     name: {
       type: String,
-      required: true,
+      required: [true, "Enter the property name."],
       trim: true,
-      minlength: 3,
-      maxlength: 100, // Property name, e.g., "Casa Verde Dormitory"
+      minlength: [3, "Use at least 3 characters."],
+      maxlength: [100, "Use 100 characters or fewer."],
     },
     propertyType: {
       type: String,
-      required: true,
+      required: [true, "Choose a property type."],
+      enum: { values: PROPERTY_TYPES, message: "Choose Dormitory or Boarding House." },
     },
     city: {
       type: String,
-      required: true,
+      required: [true, "Choose a city."],
+      enum: { values: CITIES, message: "Choose a city in Metro Manila." },
     },
     address: {
       type: String,
-      required: true,
+      required: [true, "Enter the address."],
       trim: true,
-      minlength: 5,
-      maxlength: 200, // Street, barangay, landmarks
+      minlength: [5, "Use at least 5 characters."],
+      maxlength: [200, "Use 200 characters or fewer."],
     },
     description: {
       type: String,
-      maxlength: 2000,
+      trim: true,
+      maxlength: [2000, "Use 2000 characters or fewer."],
       default: "",
     },
     monthlyRent: {
       type: Number,
-      required: true,
-      min: 1,
-      max: 100000, // Whole pesos, 1–100000
-      validate: {
-        validator: Number.isInteger,
-        message: "monthlyRent must be a whole number.",
-      },
+      required: [true, "Enter the monthly rent."],
+      min: [1, "Monthly rent must be at least 1."],
+      max: [100000, "Monthly rent can be at most 100000."],
+      validate: wholeNumber("Monthly rent"),
     },
     genderCategory: {
       type: String,
-      required: true,
+      required: [true, "Choose who can stay."],
+      enum: { values: GENDER_CATEGORIES, message: "Choose Male, Female, or Any." },
     },
     amenities: {
-      type: [String],
+      type: [{ type: String, enum: { values: AMENITIES, message: "Unknown amenity: {VALUE}." } }],
       default: [],
       validate: {
-        // Ensure no duplicates in the amenities array
-        validator: function (val) {
-          return new Set(val).size === val.length;
-        },
+        validator: (val) => new Set(val).size === val.length,
         message: "Amenities must not contain duplicates.",
       },
     },
     houseRules: {
       type: String,
-      maxlength: 2000,
+      trim: true,
+      maxlength: [2000, "Use 2000 characters or fewer."],
       default: "",
     },
     capacity: {
       type: Number,
-      required: true,
-      min: 1,
-      max: 500, // Whole number, 1–500[cite: 9]
-      validate: {
-        validator: Number.isInteger,
-        message: "capacity must be a whole number.",
-      },
+      required: [true, "Enter the capacity."],
+      min: [1, "Capacity must be at least 1."],
+      max: [500, "Capacity can be at most 500."],
+      validate: wholeNumber("Capacity"),
     },
     availableSlots: {
       type: Number,
-      required: true,
-      min: 0,
+      required: [true, "Enter the available slots."],
+      min: [0, "Available slots can't be negative."],
       validate: [
+        wholeNumber("Available slots"),
         {
-          validator: Number.isInteger,
-          message: "availableSlots must be a whole number.",
-        },
-        {
-          // Custom validation: availableSlots cannot exceed capacity[cite: 9]
           validator: function (value) {
             return value <= this.capacity;
           },
-          message: "availableSlots cannot exceed total capacity.",
+          message: "Available slots can't be more than the capacity.",
         },
       ],
     },
@@ -111,18 +102,24 @@ const listingSchema = new mongoose.Schema(
       type: [photoSchema],
       default: [],
       validate: {
-        // Enforce maximum 10 photos rule[cite: 9]
-        validator: function (val) {
-          return val.length <= 10;
-        },
-        message: "Photos array cannot exceed 10 items.",
+        validator: (val) => val.length <= MAX_PHOTOS,
+        message: `A listing can have up to ${MAX_PHOTOS} photos.`,
       },
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt fields
+    timestamps: true,
+    toJSON: { virtuals: true, versionKey: false, id: false },
   }
 );
+
+// Derived, not stored: shown as "Full" when no slots remain (FR-16).
+listingSchema.virtual("isFull").get(function () {
+  return this.availableSlots === 0;
+});
+
+listingSchema.index({ city: 1, monthlyRent: 1 });
+listingSchema.index({ owner: 1 });
 
 const Listing = mongoose.model("Listing", listingSchema);
 

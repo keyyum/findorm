@@ -1,483 +1,262 @@
-import Listing from "../models/Listing.js";
-import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
+import Listing from "../models/Listing.js";
+import Reservation from "../models/Reservation.js";
+import Inquiry from "../models/Inquiry.js";
+import { httpError } from "../middleware/errorHandler.js";
+import { CITIES, GENDER_CATEGORIES, MAX_PAGE_SIZE, MAX_PHOTOS, PAGE_SIZE, PROPERTY_TYPES } from "../config/constants.js";
 
-export const addListing = async (req, res) => {
-    const {
-        name,
-        propertyType,
-        city,
-        address,
-        description,
-        monthlyRent,
-        genderCategory, // Fixed typo from genderCatergory
-        amenities,
-        houseRules,
-        capacity,
-        availableSlots
-    } = req.body;
-
-    try {
-        // Validate only mandatory required fields according to schema rules
-        if (
-            !name ||
-            !propertyType ||
-            !city ||
-            !address ||
-            monthlyRent === undefined ||
-            !genderCategory ||
-            capacity === undefined ||
-            availableSlots === undefined
-        ) {
-            return res.status(400).json({ message: "Invalid input" });
-        }
-
-        // Create listing with owner extracted from the token (req.user set by auth middleware)
-        const listing = await Listing.create({
-            owner: req.user.id, // Set by server from token
-            name,
-            propertyType,
-            city,
-            address,
-            description,
-            monthlyRent,
-            genderCategory,
-            amenities,
-            houseRules,
-            capacity,
-            availableSlots
-        });
-
-        // Return 201 Created status code as required by the docs
-        return res.status(201).json(listing);
-    } catch (err) {
-        return res.status(400).json({ message: "Invalid input" });
-    }
-};
-
-
-// Helper arrays to validate enums if needed
-const VALID_CITIES = ["Manila", "Quezon City", "Makati"]; // Adjust to your actual D-01 list
-const VALID_PROPERTY_TYPES = ["Dormitory", "Apartment", "Condo"]; // Adjust to your property types
-const VALID_GENDERS = ["Female", "Male", "Any"];
-
-export const getListings = async (req, res) => {
-  try {
-    const {
-      city,
-      q,
-      minPrice,
-      maxPrice,
-      propertyType,
-      gender,
-      available,
-      sort,
-      page = 1,
-      limit = 10,
-    } = req.query;
-
-    const query = {};
-
-    // 1. Validate Unknown Enums -> Return 400 early
-    if (city && !VALID_CITIES.includes(city)) {
-      return res.status(400).json({ message: `Invalid city: ${city}` });
-    }
-    if (propertyType && !VALID_PROPERTY_TYPES.includes(propertyType)) {
-      return res.status(400).json({ message: `Invalid propertyType: ${propertyType}` });
-    }
-    if (gender && !VALID_GENDERS.includes(gender)) {
-      return res.status(400).json({ message: `Invalid gender: ${gender}` });
-    }
-
-    // 2. City Filter (Exact match)
-    if (city) {
-      query.city = city;
-    }
-
-    // 3. Keyword Search (q): Case-insensitive match on name OR address
-    if (q) {
-      query.$or = [
-        { name: { $regex: q,$options: "i" } },
-        { address: { $regex: q,$options: "i" } },
-      ];
-    }
-
-    // 4. Price Filters (monthlyRent)
-    if (minPrice || maxPrice) {
-      query.monthlyRent = {};
-      if (minPrice) query.monthlyRent.$gte = Number(minPrice);
-      if (maxPrice) query.monthlyRent.$lte = Number(maxPrice);
-    }
-
-    // 5. Property Type Filter
-    if (propertyType) {
-      query.propertyType = propertyType;
-    }
-
-    // 6. Gender Filter (D-12 rule: e.g., "Female" matches "Female" and "Any")
-    if (gender) {
-      if (gender === "Female") {
-        query.genderCategory = { $in: ["Female", "Any"] };
-      } else if (gender === "Male") {
-        query.genderCategory = { $in: ["Male", "Any"] };
-      } else {
-        query.genderCategory = gender;
-      }
-    }
-
-    // 7. Availability Filter
-    if (available === "true") {
-      query.availableSlots = { $gt: 0 };
-    }
-
-    // 8. Sorting
-    let sortOptions = { createdAt: -1 }; // Default: newest first
-    if (sort === "price_asc") {
-      sortOptions = { monthlyRent: 1 };
-    } else if (sort === "price_desc") {
-      sortOptions = { monthlyRent: -1 };
-    }
-
-    // 9. Pagination Calculation
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-    const skip = (pageNum - 1) * limitNum;
-
-    const [listings, total] = await Promise.all([
-      Listing.find(query)
-        .sort(sortOptions)
-        .skip(skip)
-        .limit(limitNum),
-      Listing.countDocuments(query),
-    ]);
-
-    // 10. Return Paged Result (200 OK)
-    return res.status(200).json({
-      items: listings,
-      page: pageNum,
-      limit: limitNum,
-      totalPages: Math.ceil(total / limitNum),
-      total,
-    });
-  } catch (err) {
-    return res.status(400).json({ message: "Invalid request parameters" });
-  }
-};
-
-export const getMyListings = async (req, res) => {
-  try {
-    // 1. Get page and limit from query params with defaults
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const skip = (page - 1) * limit;
-
-    // 2. Query listings where owner matches logged-in user ID
-    const query = { owner: req.user.id };
-
-    // 3. Fetch listings sorted newest first (createdAt: -1) with total count
-    const [listings, total] = await Promise.all([
-      Listing.find(query)
-        .sort({ createdAt: -1 }) // Newest first
-        .skip(skip)
-        .limit(limit),
-      Listing.countDocuments(query),
-    ]);
-
-    // 4. Return paged list structure (using 'items' to match frontend)
-    return res.status(200).json({
-      items: listings,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-      total,
-    });
-  } catch (err) {
-    return res.status(500).json({ message: "Failed to fetch owner listings" });
-  }
-};
-
-export const getListingById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // 1. Validate if the parameter is a valid MongoDB ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 2. Fetch the listing by ID (populate owner name/email if needed)
-    const listing = await Listing.findById(id).populate(
-      "owner",
-      "name email phone"
-    );
-
-    // 3. Handle 404 if listing does not exist
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 4. Return full listing details (200 OK)
-    return res.status(200).json(listing);
-  } catch (err) {
-    return res.status(500).json({ message: "Failed to fetch listing details" });
-  }
-};
-
-
-// Ensure Cloudinary is configured with your credentials elsewhere or here
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const addListingPhotos = async (req, res) => {
-  try {
-    const { id } = req.params;
+// Fields an owner (or admin) may set. Anything else in the body is ignored,
+// so `owner`, `photos`, `_id` etc. can't be overwritten.
+const EDITABLE_FIELDS = [
+  "name", "propertyType", "city", "address", "description", "monthlyRent",
+  "genderCategory", "amenities", "houseRules", "capacity", "availableSlots",
+];
 
-    // 1. Validate Mongo ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
+const pick = (body, fields) =>
+  Object.fromEntries(fields.filter((f) => body[f] !== undefined).map((f) => [f, body[f]]));
 
-    // 2. Fetch listing
-    const listing = await Listing.findById(id);
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
+/** ListingSummary from docs/api-spec.md — used in search results and lists. */
+const toSummary = (l) => ({
+  _id: l._id,
+  name: l.name,
+  propertyType: l.propertyType,
+  city: l.city,
+  monthlyRent: l.monthlyRent,
+  genderCategory: l.genderCategory,
+  availableSlots: l.availableSlots,
+  capacity: l.capacity,
+  isFull: l.availableSlots === 0,
+  photo: l.photos?.[0]?.url || null,
+});
 
-    // 3. Verify ownership (Owner can only modify their own listing)[cite: 17]
-    if (listing.owner.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Forbidden: Not listing owner" });
-    }
+const SUMMARY_FIELDS = "name propertyType city monthlyRent genderCategory availableSlots capacity photos";
 
-    // 4. Validate uploaded files presence
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "No photos uploaded" });
-    }
+/** page/limit from the query (docs/api-spec.md → "Paged lists"). */
+function paging(query) {
+  const page = Math.max(parseInt(query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(query.limit, 10) || PAGE_SIZE, 1), MAX_PAGE_SIZE);
+  return { page, limit, skip: (page - 1) * limit };
+}
 
-    // 5. Enforce 10 photos total constraint[cite: 9, 17]
-    if (listing.photos.length + req.files.length > 10) {
-      return res.status(400).json({ message: "Cannot exceed 10 photos per listing" });
-    }
+const pagedResponse = (items, total, { page, limit }) => ({
+  items,
+  page,
+  limit,
+  total,
+  totalPages: Math.ceil(total / limit),
+});
 
-    // 6. Upload file buffers to Cloudinary
-    const uploadPromises = req.files.map((file) => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "listings" },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve({
-              url: result.secure_url,
-              publicId: result.public_id,
-            });
-          }
-        );
-        stream.end(file.buffer);
-      });
-    });
+// Treats user input as plain text inside a regex (so "(" or ".*" can't break the query).
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    const uploadedPhotos = await Promise.all(uploadPromises);
-
-    // 7. Save photo references to database schema[cite: 9]
-    listing.photos.push(...uploadedPhotos);
-    await listing.save();
-
-    // 8. Return updated listing document[cite: 17]
-    return res.status(200).json(listing);
-  } catch (err) {
-    return res.status(400).json({ message: err.message || "Invalid image upload request" });
-  }
+const SORTS = {
+  newest: { createdAt: -1 },
+  price_asc: { monthlyRent: 1, createdAt: -1 },
+  price_desc: { monthlyRent: -1, createdAt: -1 },
 };
 
-export const deleteListingPhoto = async (req, res) => {
-  try {
-    const { id, photoId } = req.params;
-
-    // 1. Validate Mongo ObjectIds
-    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(photoId)) {
-      return res.status(404).json({ message: "Listing or photo not found" });
-    }
-
-    // 2. Find the listing
-    const listing = await Listing.findById(id);
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 3. Verify ownership
-    if (listing.owner.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Forbidden: Not listing owner" });
-    }
-
-    // 4. Find the target photo subdocument using subdocument .id() or _id matching
-    const photo = listing.photos.id(photoId);
-    if (!photo) {
-      return res.status(404).json({ message: "Photo not found" });
-    }
-
-    // 5. Delete from Cloudinary if a publicId exists
-    if (photo.publicId) {
-      await cloudinary.uploader.destroy(photo.publicId);
-    }
-
-    // 6. Remove photo subdocument from Mongoose array & save
-    listing.photos.pull({ _id: photoId });
-    await listing.save();
-
-    // 7. Return updated listing document
-    return res.status(200).json(listing);
-  } catch (err) {
-    return res.status(500).json({ message: "Failed to delete photo" });
-  }
+// D-12: a gender filter shows listings that accept that gender.
+const GENDER_FILTER = {
+  Male: ["Male", "Any"],
+  Female: ["Female", "Any"],
+  Any: ["Any"],
 };
 
-export const deleteListing = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // 1. Validate Mongo ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 2. Find listing
-    const listing = await Listing.findById(id);
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 3. Authorization check: Owner of the listing OR Admin
-    const isOwner = listing.owner.toString() === req.user.id;
-    const isAdmin = req.user.role === "admin";
-
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
-    }
-
-    // 4. Delete photos from Cloudinary[cite: 11]
-    if (listing.photos && listing.photos.length > 0) {
-      const deletePhotoPromises = listing.photos
-        .filter((photo) => photo.publicId)
-        .map((photo) => cloudinary.uploader.destroy(photo.publicId));
-
-      await Promise.all(deletePhotoPromises);
-    }
-
-    // 5. Cascade delete related reservations and inquiries[cite: 11]
-    await Promise.all([
-      Reservation.deleteMany({ listing: id }),
-      Inquiry.deleteMany({ listing: id }),
-      Listing.findByIdAndDelete(id),
-    ]);
-
-    // 6. Return 204 No Content[cite: 11]
-    return res.status(204).send();
-  } catch (err) {
-    return res.status(500).json({ message: "Failed to delete listing" });
+/**
+ * Loads a listing the caller may manage. Someone else's listing is reported as
+ * 404, not 403, so its existence isn't revealed (docs/api-spec.md → Errors).
+ */
+async function findManageable(req, { allowAdmin }) {
+  const listing = await Listing.findById(req.params.id);
+  const isOwner = listing && listing.owner.toString() === req.user.id;
+  const isAdmin = allowAdmin && req.user.role === "admin";
+  if (!listing || (!isOwner && !isAdmin)) {
+    throw httpError(404, "Listing not found.");
   }
+  return listing;
+}
+
+// POST /api/listings — FR-04, FR-05 (owner only, enforced in the route)
+export const addListing = async (req, res) => {
+  const listing = await Listing.create({
+    ...pick(req.body, EDITABLE_FIELDS),
+    owner: req.user.id, // Set by server from token, never from the body
+  });
+
+  return res.status(201).json(listing);
 };
 
-export const updateListingAvailability = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { availableSlots } = req.body;
+// GET /api/listings — FR-07, FR-08, FR-09 (public)
+export const getListings = async (req, res) => {
+  const { city, q, minPrice, maxPrice, propertyType, gender, available, sort = "newest" } = req.query;
 
-    // 1. Validate Mongo ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 2. Validate body input
-    if (typeof availableSlots !== "number" || availableSlots < 0) {
-      return res.status(400).json({ message: "availableSlots must be a non-negative number" });
-    }
-
-    // 3. Find listing
-    const listing = await Listing.findById(id);
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 4. Verify ownership
-    if (listing.owner.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Forbidden: Not listing owner" });
-    }
-
-    // 5. Enforce slot capacity limit (availableSlots cannot exceed total capacity)
-    if (availableSlots > listing.capacity) {
-      return res.status(400).json({
-        message: `Available slots (${availableSlots}) cannot exceed total capacity (${listing.capacity})`,
-      });
-    }
-
-    // 6. Update fields and sync isFull status flag
-    listing.availableSlots = availableSlots;
-    listing.isFull = availableSlots === 0;
-
-    await listing.save();
-
-    // 7. Return updated listing document
-    return res.status(200).json(listing);
-  } catch (err) {
-    return res.status(500).json({ message: err.message || "Failed to update availability" });
+  // Unknown values are a 400, not an empty list, so typos are caught early.
+  const errors = {};
+  if (city && !CITIES.includes(city)) errors.city = "Choose a city in Metro Manila.";
+  if (propertyType && !PROPERTY_TYPES.includes(propertyType)) errors.propertyType = "Choose Dormitory or Boarding House.";
+  if (gender && !GENDER_CATEGORIES.includes(gender)) errors.gender = "Choose Male, Female, or Any.";
+  if (!SORTS[sort]) errors.sort = "Sort by newest, price_asc, or price_desc.";
+  if (minPrice && !Number.isFinite(Number(minPrice))) errors.minPrice = "Enter a number.";
+  if (maxPrice && !Number.isFinite(Number(maxPrice))) errors.maxPrice = "Enter a number.";
+  if (available && !["true", "false"].includes(available)) errors.available = "Use true or false.";
+  if (Object.keys(errors).length) {
+    throw httpError(400, "Please fix the search filters.", errors);
   }
+
+  const query = {};
+  if (city) query.city = city;
+  if (q?.trim()) {
+    const pattern = new RegExp(escapeRegex(q.trim()), "i");
+    query.$or = [{ name: pattern }, { address: pattern }];
+  }
+  if (minPrice || maxPrice) {
+    query.monthlyRent = {};
+    if (minPrice) query.monthlyRent.$gte = Number(minPrice);
+    if (maxPrice) query.monthlyRent.$lte = Number(maxPrice);
+  }
+  if (propertyType) query.propertyType = propertyType;
+  if (gender) query.genderCategory = { $in: GENDER_FILTER[gender] };
+  if (available === "true") query.availableSlots = { $gt: 0 };
+
+  const pg = paging(req.query);
+  const [listings, total] = await Promise.all([
+    Listing.find(query).select(SUMMARY_FIELDS).sort(SORTS[sort]).skip(pg.skip).limit(pg.limit),
+    Listing.countDocuments(query),
+  ]);
+
+  return res.status(200).json(pagedResponse(listings.map(toSummary), total, pg));
 };
 
+// GET /api/listings/mine — FR-04 (owner only)
+export const getMyListings = async (req, res) => {
+  const query = { owner: req.user.id };
+  const pg = paging(req.query);
+
+  const [listings, total] = await Promise.all([
+    Listing.find(query).select(SUMMARY_FIELDS).sort({ createdAt: -1 }).skip(pg.skip).limit(pg.limit),
+    Listing.countDocuments(query),
+  ]);
+
+  return res.status(200).json(pagedResponse(listings.map(toSummary), total, pg));
+};
+
+// GET /api/listings/:id — FR-10 (public)
+export const getListingById = async (req, res) => {
+  // Owner is shown as a PublicUser: name only, never email or phone (NFR-04).
+  const listing = await Listing.findById(req.params.id).populate("owner", "firstName lastName");
+
+  if (!listing) {
+    throw httpError(404, "Listing not found.");
+  }
+
+  return res.status(200).json(listing);
+};
+
+// PATCH /api/listings/:id — FR-04, FR-17 (owner of this listing, or admin)
 export const updateListing = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const listing = await findManageable(req, { allowAdmin: true });
 
-    // 1. Validate Mongo ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 2. Fetch existing listing
-    const listing = await Listing.findById(id);
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
-    }
-
-    // 3. Verify permissions: Owner (own) or Admin
-    const isOwner = listing.owner.toString() === req.user.id;
-    const isAdmin = req.user.role === "admin";
-
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
-    }
-
-    const updates = { ...req.body };
-
-    // 4. Validate capacity restriction:
-    // If capacity is lowered below current availableSlots, return 400
-    if (updates.capacity !== undefined) {
-      const newCapacity = Number(updates.capacity);
-      const targetAvailableSlots = updates.availableSlots !== undefined 
-        ? Number(updates.availableSlots) 
-        : listing.availableSlots;
-
-      if (newCapacity < targetAvailableSlots) {
-        return res.status(400).json({
-          message: "Capacity cannot be lower than current available slots",
-        });
-      }
-
-      // Recalculate isFull if capacity changed
-      updates.isFull = targetAvailableSlots === 0;
-    }
-
-    // 5. Protect immutable properties
-    delete updates.photos;
-    delete updates.owner;
-
-    // 6. Apply updates and return modified listing
-    Object.assign(listing, updates);
-    await listing.save();
-
-    return res.status(200).json(listing);
-  } catch (err) {
-    return res.status(400).json({ message: err.message || "Invalid update payload" });
+  const updates = pick(req.body, EDITABLE_FIELDS);
+  const nextCapacity = updates.capacity ?? listing.capacity;
+  const nextSlots = updates.availableSlots ?? listing.availableSlots;
+  if (Number(nextCapacity) < Number(nextSlots)) {
+    throw httpError(400, "Please fix the highlighted fields.", {
+      capacity: "Capacity can't be lower than the available slots.",
+    });
   }
+
+  listing.set(updates);
+  await listing.save();
+
+  return res.status(200).json(listing);
+};
+
+// PATCH /api/listings/:id/availability — FR-06 (owner of this listing)
+export const updateListingAvailability = async (req, res) => {
+  const listing = await findManageable(req, { allowAdmin: false });
+  const { availableSlots } = req.body;
+
+  if (!Number.isInteger(availableSlots) || availableSlots < 0 || availableSlots > listing.capacity) {
+    throw httpError(400, "Please fix the highlighted fields.", {
+      availableSlots: `Enter a whole number from 0 to ${listing.capacity}.`,
+    });
+  }
+
+  listing.availableSlots = availableSlots;
+  await listing.save();
+
+  return res.status(200).json(listing);
+};
+
+// DELETE /api/listings/:id — FR-04, FR-17 (owner of this listing, or admin)
+export const deleteListing = async (req, res) => {
+  const listing = await findManageable(req, { allowAdmin: true });
+
+  // Delete the data first (D-11). Photos are cleaned up afterwards, so a
+  // Cloudinary hiccup can never leave a listing whose photos are gone.
+  await Promise.all([
+    Reservation.deleteMany({ listing: listing._id }),
+    Inquiry.deleteMany({ listing: listing._id }),
+  ]);
+  await listing.deleteOne();
+
+  // async wrapper: destroy() can also throw synchronously (e.g. missing Cloudinary keys).
+  const results = await Promise.allSettled(listing.photos.map(async (p) => cloudinary.uploader.destroy(p.publicId)));
+  for (const r of results) {
+    if (r.status === "rejected") console.error("Cloudinary cleanup failed:", r.reason?.message || r.reason);
+  }
+
+  return res.status(204).send();
+};
+
+// POST /api/listings/:id/photos — FR-05 (owner of this listing)
+export const addListingPhotos = async (req, res) => {
+  const listing = await findManageable(req, { allowAdmin: false });
+
+  if (!req.files?.length) {
+    throw httpError(400, "Choose at least one photo.");
+  }
+  if (listing.photos.length + req.files.length > MAX_PHOTOS) {
+    throw httpError(400, `A listing can have up to ${MAX_PHOTOS} photos.`);
+  }
+
+  const uploaded = await Promise.all(
+    req.files.map(
+      (file) =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream({ folder: "findorm/listings" }, (error, result) => {
+            if (error) return reject(error);
+            resolve({ url: result.secure_url, publicId: result.public_id });
+          });
+          stream.end(file.buffer);
+        })
+    )
+  );
+
+  listing.photos.push(...uploaded);
+  await listing.save();
+
+  return res.status(200).json(listing);
+};
+
+// DELETE /api/listings/:id/photos/:photoId — FR-05 (owner of this listing)
+export const deleteListingPhoto = async (req, res) => {
+  const listing = await findManageable(req, { allowAdmin: false });
+
+  const photo = listing.photos.id(req.params.photoId);
+  if (!photo) {
+    throw httpError(404, "Photo not found.");
+  }
+
+  await cloudinary.uploader.destroy(photo.publicId);
+  photo.deleteOne();
+  await listing.save();
+
+  return res.status(200).json(listing);
 };

@@ -1,2 +1,2 @@
-const Reservation = require('../models/Reservation');
-const Listing = require('../models/Listing');
+import Reservation from "../models/Reservation.js";
+import Listing from "../models/Listing.js";

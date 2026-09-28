@@ -1,122 +1,72 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { httpError } from "../middleware/errorHandler.js";
 
-// Helper function to sign tokens
-const generateToken = (user) => {
-  return jwt.sign(
-    { id: user._id, email: user.email, role: user.role },
-    process.env.JWT_SECRET || "fallback_secret",
-    { expiresIn: "1h" }
-  );
-};
+// Token goes back in the response body; the client stores it and sends it as
+// `Authorization: Bearer <token>`. Logout is client-side (D-13), so no cookie.
+const generateToken = (user) =>
+  jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  });
 
+const normalizeEmail = (email) => (typeof email === "string" ? email.trim().toLowerCase() : email);
+
+/** Password rules from docs/data-model.md. bcrypt ignores anything past 72 bytes. */
+export function passwordError(password) {
+  if (typeof password !== "string" || password.length < 8) return "Use at least 8 characters.";
+  if (Buffer.byteLength(password) > 72) return "Use 72 characters or fewer.";
+  return null;
+}
+
+// POST /api/auth/register — FR-01
 export const register = async (req, res) => {
-  try {
-    const { firstName, lastName, email, password, role, phone } = req.body;
+  const { firstName, lastName, password, role, phone } = req.body;
+  const email = normalizeEmail(req.body.email);
 
-    // 400 Bad Request: Invalid input (missing mandatory fields)
-    if (!firstName || !lastName || !email || !password || !role) {
-      return res.status(400).json({ message: "All required fields must be provided." });
-    }
-
-    // 400 Bad Request: Invalid input (disallowed role or admin request)
-    if (role === "admin" || !["seeker", "owner"].includes(role)) {
-      return res.status(400).json({ message: "Role must be 'seeker' or 'owner'." });
-    }
-
-    // 400 Bad Request: Invalid input (password shorter than 8 chars)
-    if (password.length < 8) {
-      return res.status(400).json({
-        message: "Password should contain minimum of 8 characters"
-      });
-    }
-
-    // 409 Conflict: Conflicts with current state (email taken)
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ message: "Email already registered" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      role,
-      phone
-    });
-
-    const token = generateToken(newUser);
-
-    res.cookie("findorm_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 1000
-    });
-
-    const userResponse = newUser.toObject();
-    delete userResponse.password;
-
-    // 201 Created -> { "token": "...", "user": User }
-    return res.status(201).json({
-      token,
-      user: userResponse
-    });
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
+  // Admin accounts only come from the seed script (D-09).
+  if (!["seeker", "owner"].includes(role)) {
+    throw httpError(400, "Please fix the highlighted fields.", { role: "Choose seeker or owner." });
   }
+
+  const pwError = passwordError(password);
+  if (pwError) {
+    throw httpError(400, "Please fix the highlighted fields.", { password: pwError });
+  }
+
+  if (await User.exists({ email })) {
+    throw httpError(409, "That email is already registered.", { email: "That email is already registered." });
+  }
+
+  // Validate everything else before spending time on the hash.
+  const user = new User({ firstName, lastName, email, password: "unhashed", role, phone: phone || undefined });
+  await user.validate();
+  user.password = await bcrypt.hash(password, 10);
+  await user.save();
+
+  return res.status(201).json({ token: generateToken(user), user });
 };
 
+// POST /api/auth/login — FR-02
 export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { password } = req.body;
+  const email = normalizeEmail(req.body.email);
 
-    // 400 Bad Request: Invalid input (missing login fields)
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-
-    const user = await User.findOne({ email });
-
-    // 401 Unauthorized: Wrong email or bad credentials
-    if (!user) {
-      return res.status(401).json({ message: "Wrong email or password" });
-    }
-
-    // 401 Unauthorized: Account deactivated
-    if (user.isDeactivated) {
-      return res.status(401).json({ message: "Account deactivated" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    // 401 Unauthorized: Wrong password or bad credentials
-    if (!isMatch) {
-      return res.status(401).json({ message: "Wrong email or password" });
-    }
-
-    const token = generateToken(user);
-
-    res.cookie("findorm_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 1000
-    });
-
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
-    // 200 OK -> { "token": "...", "user": User }
-    return res.status(200).json({
-      token,
-      user: userResponse
-    });
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
+  if (!email || !password) {
+    throw httpError(400, "Enter your email and password.");
   }
+
+  const user = await User.findOne({ email }).select("+password");
+
+  // Same message for unknown email and wrong password, so emails can't be probed.
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    throw httpError(401, "Wrong email or password.");
+  }
+
+  // Checked after the password so this doesn't reveal which emails exist (D-08).
+  if (!user.isActive) {
+    throw httpError(401, "This account has been deactivated.");
+  }
+
+  return res.status(200).json({ token: generateToken(user), user });
 };
