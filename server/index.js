@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import listingRoutes from "./routes/listingRoutes.js";
+import reservationRoutes from "./routes/reservationRoutes.js";
 import notFound from "./middleware/notFound.js";
 import errorHandler from "./middleware/errorHandler.js";
 
@@ -29,6 +30,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/listings", listingRoutes);
+app.use("/api/reservations", reservationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

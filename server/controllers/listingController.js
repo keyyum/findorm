@@ -3,7 +3,8 @@ import Listing from "../models/Listing.js";
 import Reservation from "../models/Reservation.js";
 import Inquiry from "../models/Inquiry.js";
 import { httpError } from "../middleware/errorHandler.js";
-import { CITIES, GENDER_CATEGORIES, MAX_PAGE_SIZE, MAX_PHOTOS, PAGE_SIZE, PROPERTY_TYPES } from "../config/constants.js";
+import { paging, pagedResponse } from "../utils/paging.js";
+import { CITIES, GENDER_CATEGORIES, MAX_PHOTOS, PROPERTY_TYPES } from "../config/constants.js";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -36,21 +37,6 @@ const toSummary = (l) => ({
 });
 
 const SUMMARY_FIELDS = "name propertyType city monthlyRent genderCategory availableSlots capacity photos";
-
-/** page/limit from the query (docs/api-spec.md → "Paged lists"). */
-function paging(query) {
-  const page = Math.max(parseInt(query.page, 10) || 1, 1);
-  const limit = Math.min(Math.max(parseInt(query.limit, 10) || PAGE_SIZE, 1), MAX_PAGE_SIZE);
-  return { page, limit, skip: (page - 1) * limit };
-}
-
-const pagedResponse = (items, total, { page, limit }) => ({
-  items,
-  page,
-  limit,
-  total,
-  totalPages: Math.ceil(total / limit),
-});
 
 // Treats user input as plain text inside a regex (so "(" or ".*" can't break the query).
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
