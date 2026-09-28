@@ -7,6 +7,8 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import listingRoutes from "./routes/listingRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
+import inquiryRoutes from "./routes/inquiryRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import notFound from "./middleware/notFound.js";
 import errorHandler from "./middleware/errorHandler.js";
 
@@ -31,6 +33,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

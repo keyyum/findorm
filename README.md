@@ -95,6 +95,12 @@ Open http://localhost:5173. The page reports whether it can reach the API — if
 
 Requests to `/api/...` from the front end are proxied to port 5000 by Vite, so there is no CORS setup to do in development.
 
+**Admin account:** admins can't sign up through the app (D-09). Create one from `server/`:
+
+```bash
+ADMIN_EMAIL=admin@findorm.test ADMIN_PASSWORD='at-least-8-chars' npm run create-admin
+```
+
 Never commit a real `.env` file — only `.env.example` with placeholder values.
 
 ## Current state
