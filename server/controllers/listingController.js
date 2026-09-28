@@ -23,7 +23,7 @@ const pick = (body, fields) =>
   Object.fromEntries(fields.filter((f) => body[f] !== undefined).map((f) => [f, body[f]]));
 
 /** ListingSummary from docs/api-spec.md — used in search results and lists. */
-const toSummary = (l) => ({
+export const toSummary = (l) => ({
   _id: l._id,
   name: l.name,
   propertyType: l.propertyType,
@@ -36,10 +36,10 @@ const toSummary = (l) => ({
   photo: l.photos?.[0]?.url || null,
 });
 
-const SUMMARY_FIELDS = "name propertyType city monthlyRent genderCategory availableSlots capacity photos";
+export const SUMMARY_FIELDS = "name propertyType city monthlyRent genderCategory availableSlots capacity photos";
 
 // Treats user input as plain text inside a regex (so "(" or ".*" can't break the query).
-const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+export const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const SORTS = {
   newest: { createdAt: -1 },
@@ -78,9 +78,12 @@ export const addListing = async (req, res) => {
   return res.status(201).json(listing);
 };
 
-// GET /api/listings — FR-07, FR-08, FR-09 (public)
-export const getListings = async (req, res) => {
-  const { city, q, minPrice, maxPrice, propertyType, gender, available, sort = "newest" } = req.query;
+/**
+ * Turns the search query string into a Mongo filter and sort. Shared by the
+ * public search and GET /api/admin/listings ("same filters", docs/api-spec.md).
+ */
+export function listingSearch(reqQuery) {
+  const { city, q, minPrice, maxPrice, propertyType, gender, available, sort = "newest" } = reqQuery;
 
   // Unknown values are a 400, not an empty list, so typos are caught early.
   const errors = {};
@@ -110,9 +113,16 @@ export const getListings = async (req, res) => {
   if (gender) query.genderCategory = { $in: GENDER_FILTER[gender] };
   if (available === "true") query.availableSlots = { $gt: 0 };
 
+  return { query, sort: SORTS[sort] };
+}
+
+// GET /api/listings — FR-07, FR-08, FR-09 (public)
+export const getListings = async (req, res) => {
+  const { query, sort } = listingSearch(req.query);
+
   const pg = paging(req.query);
   const [listings, total] = await Promise.all([
-    Listing.find(query).select(SUMMARY_FIELDS).sort(SORTS[sort]).skip(pg.skip).limit(pg.limit),
+    Listing.find(query).select(SUMMARY_FIELDS).sort(sort).skip(pg.skip).limit(pg.limit),
     Listing.countDocuments(query),
   ]);
 
