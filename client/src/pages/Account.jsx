@@ -27,11 +27,11 @@ export default function Account() {
   return (
     <Page width={1200}>
       <PageTitle title="Account settings" sub="Manage your profile and password. Each section saves on its own." />
-      <div className="mt-7 flex items-start gap-6">
+      <div className="mt-7 flex items-start gap-6 max-lg:flex-col max-lg:items-stretch">
         <ProfileCard key={user._id} />
         <PasswordCard />
       </div>
-      <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] border border-line bg-white px-6 py-5">
+      <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] border border-line bg-white px-6 py-5 max-sm:flex-col max-sm:items-start">
         <div className="flex flex-col gap-1">
           <span className="text-[15px] font-semibold">Log out</span>
           <span className="text-sm text-steel">End your session on this device. You can also log out from the menu under your name.</span>
@@ -89,12 +89,12 @@ function ProfileCard() {
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} aria-labelledby="profile-h" aria-busy={busy} className="flex w-[720px] shrink-0 flex-col rounded-[14px] border border-line bg-white">
+    <form noValidate onSubmit={onSubmit} aria-labelledby="profile-h" aria-busy={busy} className="flex w-[720px] shrink-0 flex-col rounded-[14px] max-lg:w-full border border-line bg-white">
       <div className="flex items-center gap-4 border-b border-haze p-6">
         <span aria-hidden="true" className="flex h-16 w-16 items-center justify-center rounded-full bg-navy text-[22px] font-semibold text-white">{initials(user)}</span>
         <div className="flex flex-col gap-2">
           <span className="text-xl font-semibold tracking-tight">{fullName(user)}</span>
-          <div className="flex items-center gap-2.5 text-[13px] text-steel">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-steel">
             <span title="Your role can’t be changed" className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_STYLE[user.role]}`}>
               <LockIcon size={12} /> {cap(user.role)}
             </span>
@@ -110,11 +110,11 @@ function ProfileCard() {
           <p className="text-sm text-steel">Your name and contact details. Your role can’t be changed.</p>
         </div>
         {alert && <Alert title={alert} />}
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-2 gap-5 max-sm:grid-cols-1">
           <TextField label="First name" autoComplete="given-name" maxLength={50} value={p.firstName} onChange={set("firstName")} error={errors.firstName} disabled={busy} />
           <TextField label="Last name" autoComplete="family-name" maxLength={50} value={p.lastName} onChange={set("lastName")} error={errors.lastName} disabled={busy} />
-          <TextField className="col-span-2" label="Email" type="email" autoComplete="email" value={p.email} onChange={set("email")} error={errors.email} disabled={busy} />
-          <TextField className="col-span-2" label="Phone" optional type="tel" inputMode="numeric" autoComplete="tel" maxLength={11} placeholder="09171234567"
+          <TextField className="sm:col-span-2" label="Email" type="email" autoComplete="email" value={p.email} onChange={set("email")} error={errors.email} disabled={busy} />
+          <TextField className="sm:col-span-2" label="Phone" optional type="tel" inputMode="numeric" autoComplete="tel" maxLength={11} placeholder="09171234567"
             value={p.phone} onChange={set("phone")} error={errors.phone} hint="11 digits, starting with 09." disabled={busy} />
         </div>
       </div>
@@ -172,7 +172,7 @@ function PasswordCard() {
   }
 
   return (
-    <form key={formKey} noValidate onSubmit={onSubmit} aria-labelledby="pw-h" aria-busy={busy} className="flex min-w-0 flex-1 flex-col rounded-[14px] border border-line bg-white">
+    <form key={formKey} noValidate onSubmit={onSubmit} aria-labelledby="pw-h" aria-busy={busy} className="flex min-w-0 flex-1 flex-col rounded-[14px] max-lg:flex-none border border-line bg-white">
       <div className="flex flex-col gap-5 p-6">
         <div className="flex flex-col gap-1">
           <h2 id="pw-h" className="text-[17px] font-semibold tracking-tight">Change password</h2>

@@ -84,11 +84,11 @@ export default function AdminUsers() {
   const td = "px-4 border-b border-haze";
 
   return (
-    <div>
+    <div className="fade">
       <PageTitle title="Users" sub={state.data ? `${state.data.total} ${state.data.total === 1 ? "user" : "users"}${hasFilters ? " match" : ""}` : " "} />
 
-      <div role="search" aria-label="Filter users" className="mt-6 flex items-end gap-3">
-        <label className="flex flex-1 flex-col gap-1.5 text-xs font-medium text-steel">
+      <div role="search" aria-label="Filter users" className="mt-6 flex flex-wrap items-end gap-3">
+        <label className="flex min-w-[220px] flex-1 flex-col gap-1.5 max-sm:basis-full text-xs font-medium text-steel">
           Search
           <span className="relative">
             <SearchIcon size={18} className="absolute top-[11px] left-3" />
@@ -103,7 +103,7 @@ export default function AdminUsers() {
         {hasFilters && <Button variant="ghost" className="!h-10" onClick={clear}>Clear filters</Button>}
       </div>
 
-      <div className="mt-5 overflow-hidden rounded-[14px] border border-line bg-white">
+      <div className="mt-5 overflow-x-auto rounded-[14px] border border-line bg-white">
         {state.status === "error" ? (
           <div className="p-6"><EmptyState icon={WarningIcon} title="Couldn’t load users" dashed={false} action={<Button variant="ghost" onClick={load}>Try again</Button>}>{state.error}</EmptyState></div>
         ) : state.status === "ready" && items.length === 0 ? (
@@ -113,7 +113,7 @@ export default function AdminUsers() {
             </EmptyState>
           </div>
         ) : (
-          <table className="w-full table-fixed border-collapse text-sm">
+          <table className="w-full min-w-[880px] table-fixed border-collapse text-sm">
             <colgroup><col /><col className="w-[27%]" /><col className="w-[124px]" /><col className="w-[80px]" /><col className="w-[124px]" /><col className="w-[84px]" /><col className="w-[136px]" /></colgroup>
             <thead className="bg-page">
               <tr>

@@ -48,7 +48,7 @@ export default function Login() {
 
   return (
     <AuthShell heading="Pick up where you left off." sub="Your saved dorms, conversations with owners and listings are waiting.">
-      <form noValidate onSubmit={onSubmit} aria-busy={busy} className="flex w-[400px] flex-col gap-6">
+      <form noValidate onSubmit={onSubmit} aria-busy={busy} className="rise flex w-full max-w-[400px] flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-[30px] leading-tight font-semibold tracking-[-0.02em]">Log in</h1>
           <p className="text-[15px] text-navy">Welcome back to FINDorm.</p>

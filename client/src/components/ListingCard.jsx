@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { peso, plural } from "../lib/format";
 import { ImageIcon, MapPinIcon } from "./Icons";
@@ -6,21 +7,24 @@ import { FullBadge } from "./ui";
 const genderLabel = { Male: "Male only", Female: "Female only", Any: "Mixed" };
 
 /** Search result card (ListingSummary from the API). */
-export default function ListingCard({ listing }) {
+export default function ListingCard({ listing, className = "", style }) {
   const l = listing;
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   // Extract cover photo URL safely whether backend uses 'photos' array or single 'photo'
   const firstPhoto = Array.isArray(l.photos) && l.photos.length > 0 ? l.photos[0] : null;
-  const imageUrl = typeof firstPhoto === "object" ? firstPhoto?.url : (firstPhoto || l.photo);
+  const imageUrl = (typeof firstPhoto === "object" ? firstPhoto?.url : firstPhoto) || l.photo;
 
   return (
     <Link
       to={`/listings/${l._id}`}
-      className="group flex flex-col overflow-hidden rounded-[14px] border border-line bg-white transition-shadow hover:shadow-[0_12px_32px_-12px_rgba(5,10,24,0.25)]"
+      style={style}
+      className={`lift group flex flex-col rounded-[14px] border border-line bg-white ${className}`}
     >
-      <div className="relative h-[196px] bg-haze">
-        {imageUrl ? (
-          <img src={imageUrl} alt={l.name || ""} loading="lazy" className="h-full w-full object-cover" />
+      <div className="relative h-[196px] overflow-hidden rounded-t-[13px] bg-haze">
+        {imageUrl && !failed ? (
+          <img src={imageUrl} alt={l.name || ""} loading="lazy" data-loaded={loaded} onLoad={() => setLoaded(true)} onError={() => setFailed(true)} className="lift-img h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#7f9cbc]">
             <ImageIcon size={32} />

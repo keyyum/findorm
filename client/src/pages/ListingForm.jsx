@@ -226,14 +226,14 @@ export default function ListingForm({ mode, asAdmin = false }) {
       <Page width={1200}>
         <Skel className="h-4 w-28" />
         <Skel className="mt-5 h-9 w-72" />
-        <div className="mt-8 flex flex-col gap-4" aria-busy="true">{[1, 2, 3].map((i) => <Skel key={i} className="h-48 w-[800px] !rounded-[14px]" />)}</div>
+        <div className="mt-8 flex flex-col gap-4" aria-busy="true">{[1, 2, 3].map((i) => <Skel key={i} className="h-48 w-full max-w-[800px] !rounded-[14px]" />)}</div>
       </Page>
     );
   if (loadState === "notfound" || loadState === "error")
     return (
       <Page width={880}>
         <EmptyState icon={SearchIcon} title={loadState === "notfound" ? "Listing not found" : "Couldn’t load this listing"}
-          action={<Link to={backTo} className="inline-flex h-12 items-center rounded-xl bg-navy px-6 text-[15px] font-medium text-white">Back to {backLabel}</Link>}>
+          action={<Link to={backTo} className="press inline-flex h-12 items-center rounded-xl bg-navy px-6 text-[15px] font-medium text-white">Back to {backLabel}</Link>}>
           {loadState === "notfound" ? "It doesn’t exist, was deleted, or isn’t one of your listings." : "Check your connection and try again."}
         </EmptyState>
       </Page>
@@ -253,19 +253,19 @@ export default function ListingForm({ mode, asAdmin = false }) {
       </div>
 
       {asAdmin && original && (
-        <div className="mt-5 w-[800px]">
+        <div className="mt-5 max-w-[800px]">
           <Alert tone="info" icon={ShieldIcon} title={`Editing as admin · Owner: ${fullName(original.owner)}`}>
             Changes save to the owner’s listing. Update available slots here; photos can only be managed by the owner.
           </Alert>
         </div>
       )}
 
-      <form noValidate onSubmit={onSubmit} aria-busy={saving} className="mt-7 flex w-[800px] flex-col gap-6">
+      <form noValidate onSubmit={onSubmit} aria-busy={saving} className="fade mt-7 flex w-full max-w-[800px] flex-col gap-6">
         {alert && <Alert title={alert}>{Object.keys(errors).filter((k) => errors[k]).length > 0 && "Check the fields marked below."}</Alert>}
 
         <Card title="Basics">
           <TextField label="Property name" required maxLength={100} placeholder="e.g. Casa Verde Dormitory" value={v.name} onChange={set("name")} error={errors.name} disabled={saving} />
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-2 gap-5 max-sm:grid-cols-1">
             <SelectField label="Property type" required placeholder="Choose a type" options={PROPERTY_TYPES} value={v.propertyType} onChange={set("propertyType")} error={errors.propertyType} disabled={saving} />
             <SelectField label="Gender category" required placeholder="Who can stay?" value={v.genderCategory} onChange={set("genderCategory")} error={errors.genderCategory} disabled={saving}
               options={GENDER_CATEGORIES.map((g) => ({ value: g, label: g === "Any" ? "Any (mixed)" : `${g} only` }))} />
@@ -280,7 +280,7 @@ export default function ListingForm({ mode, asAdmin = false }) {
         </Card>
 
         <Card title="Rent and slots">
-          <div className="grid grid-cols-3 gap-5">
+          <div className="grid grid-cols-3 gap-5 max-sm:grid-cols-1">
             <TextField label="Monthly rent (₱)" required inputMode="numeric" placeholder="4500" value={v.monthlyRent} onChange={setNum("monthlyRent")} error={errors.monthlyRent} hint="Per slot, per month." disabled={saving} />
             <TextField label="Capacity" required inputMode="numeric" placeholder="20" value={v.capacity} onChange={setNum("capacity")} error={errors.capacity} hint="Total rooms or beds." disabled={saving} />
             <TextField label="Available slots" required inputMode="numeric" placeholder="6" value={v.availableSlots} onChange={setNum("availableSlots")} error={errors.availableSlots}
@@ -289,11 +289,11 @@ export default function ListingForm({ mode, asAdmin = false }) {
         </Card>
 
         <Card title="Amenities" sub="Pick everything that applies.">
-          <div className="grid grid-cols-3 gap-2.5" role="group" aria-label="Amenities">
+          <div className="grid grid-cols-3 gap-2.5 max-md:grid-cols-2 max-sm:grid-cols-1" role="group" aria-label="Amenities">
             {AMENITIES.map((a) => {
               const on = v.amenities.includes(a);
               return (
-                <label key={a} className={`flex cursor-pointer items-center gap-2.5 rounded-[10px] border px-3 py-2.5 text-sm font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-navy ${on ? "border-navy bg-haze" : "border-line bg-white hover:border-sky"}`}>
+                <label key={a} className={`press flex cursor-pointer items-center gap-2.5 rounded-[10px] border px-3 py-2.5 text-sm font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-navy ${on ? "border-navy bg-haze" : "border-line bg-white hover:border-sky"}`}>
                   <input type="checkbox" checked={on} onChange={() => toggleAmenity(a)} disabled={saving} className="sr-only" />
                   <AmenityIcon name={a} className="text-navy" />
                   <span className="flex-1">{a}</span>
@@ -312,7 +312,7 @@ export default function ListingForm({ mode, asAdmin = false }) {
         </Card>
 
         <Card title="Photos" sub={canManagePhotos ? `JPEG, PNG or WebP, up to 5 MB each. ${photoCount} of 10 used.` : "Only the owner can add or remove photos."}>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-5 gap-3 max-md:grid-cols-3 max-sm:grid-cols-2">
             {existing.filter((p) => !removed.includes(p._id)).map((p) => (
               <Thumb key={p._id} src={p.url} onRemove={canManagePhotos ? () => setRemoved((r) => [...r, p._id]) : null} disabled={saving} />
             ))}
@@ -321,21 +321,21 @@ export default function ListingForm({ mode, asAdmin = false }) {
             ))}
             {canManagePhotos && photoCount < LIMITS.photos && (
               <button type="button" onClick={() => fileInput.current?.click()} disabled={saving}
-                className="flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-sky-300 bg-page text-[13px] font-medium text-navy hover:border-navy hover:bg-haze">
+                className="press flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-sky-300 bg-page text-[13px] font-medium text-navy hover:border-navy hover:bg-haze">
                 <PlusIcon /> Add photos
               </button>
             )}
             {!canManagePhotos && existing.length === 0 && (
-              <div className="col-span-5 flex items-center gap-2 text-sm text-steel"><ImageIcon /> No photos.</div>
+              <div className="col-span-full flex items-center gap-2 text-sm text-steel"><ImageIcon /> No photos.</div>
             )}
           </div>
           <input ref={fileInput} type="file" accept={PHOTO_TYPES.join(",")} multiple className="hidden" onChange={(e) => addFiles(Array.from(e.target.files || []))} />
           {photoError && <FieldError>{photoError}</FieldError>}
         </Card>
 
-        <div className="sticky bottom-0 z-10 -mx-6 flex items-center justify-between gap-3 border-t border-line bg-page/95 px-6 py-4 backdrop-blur">
-          <span aria-live="polite" className="text-[13px] text-steel">{saving ? savingStep : dirty ? "Unsaved changes" : ""}</span>
-          <div className="flex gap-2.5">
+        <div className="sticky bottom-0 z-10 -mx-6 flex items-center justify-between gap-3 border-t border-line bg-page/95 px-6 py-4 backdrop-blur max-sm:flex-col max-sm:items-stretch max-sm:gap-2">
+          <span aria-live="polite" className="text-[13px] text-steel empty:hidden">{saving ? savingStep : dirty ? "Unsaved changes" : ""}</span>
+          <div className="flex gap-2.5 max-sm:[&>*]:flex-1">
             <Button variant="ghost" size="lg" className="!h-[46px]" onClick={cancel} disabled={saving}>Cancel</Button>
             <Button type="submit" size="lg" className="!h-[46px]" loading={saving} disabled={edit && !dirty}>
               {saving ? "Saving…" : edit ? "Save changes" : "Create listing"}
@@ -353,7 +353,7 @@ function toComparable(v) {
 
 function Card({ title, sub, children }) {
   return (
-    <section className="flex flex-col gap-5 rounded-[14px] border border-line bg-white p-6">
+    <section className="flex flex-col gap-5 rounded-[14px] border border-line bg-white p-6 max-sm:p-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-[17px] font-semibold tracking-tight">{title}</h2>
         {sub && <p className="text-sm text-steel">{sub}</p>}
@@ -365,12 +365,12 @@ function Card({ title, sub, children }) {
 
 function Thumb({ src, onRemove, isNew, disabled }) {
   return (
-    <div className="relative aspect-[4/3] overflow-hidden rounded-[10px] bg-haze">
+    <div className="fade relative aspect-[4/3] overflow-hidden rounded-[10px] bg-haze">
       <img src={src} alt="" className="h-full w-full object-cover" />
       {isNew && <span className="absolute bottom-1.5 left-1.5 rounded-full bg-ink/75 px-2 py-0.5 text-[11px] font-medium text-white">New</span>}
       {onRemove && (
         <button type="button" onClick={onRemove} disabled={disabled} aria-label="Remove photo"
-          className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-danger shadow hover:bg-white">
+          className="press absolute top-1.5 right-1.5 flex h-7 w-7 max-sm:h-9 max-sm:w-9 items-center justify-center rounded-full bg-white/95 text-danger shadow hover:bg-white">
           <CloseIcon size={14} />
         </button>
       )}
