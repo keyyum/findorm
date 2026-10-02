@@ -1,13 +1,15 @@
 {
   "name": "findorm-server",
   "version": "0.1.0",
-  "description": "FINDorm back end — Node.js + Express + MongoDB",
+  "description": "FINDorm back end \u2014 Node.js + Express + MongoDB",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
     "create-admin": "node scripts/createAdmin.js",
+    "test:api": "node tests/api.test.mjs",
+    "seed-demo": "node scripts/seedDemo.js",
     "seed-dorms": "node scripts/seedDorms.js"
   },
   "dependencies": {
