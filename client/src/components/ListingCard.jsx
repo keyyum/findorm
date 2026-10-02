@@ -9,9 +9,9 @@ const genderLabel = { Male: "Male only", Female: "Female only", Any: "Mixed" };
 export default function ListingCard({ listing }) {
   const l = listing;
 
-  // Extract cover photo URL safely whether backend uses 'photos' array or single 'photo'
-  const firstPhoto = Array.isArray(l.photos) && l.photos.length > 0 ? l.photos[0] : null;
-  const imageUrl = typeof firstPhoto === "object" ? firstPhoto?.url : (firstPhoto || l.photo);
+  // Summaries send `photo` (the cover URL); full listings send `photos` [{ url }].
+  const firstPhoto = l.photos?.[0];
+  const imageUrl = l.photo || (typeof firstPhoto === "string" ? firstPhoto : firstPhoto?.url);
 
   return (
     <Link

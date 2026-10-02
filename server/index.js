@@ -1,4 +1,6 @@
 import "dotenv/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 
@@ -28,6 +30,10 @@ app.use(express.json());
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", service: "findorm-api" });
 });
+
+// Demo photos from scripts/seedDorms.js when Cloudinary isn't set up (local only).
+const seedImages = path.join(path.dirname(fileURLToPath(import.meta.url)), "scripts/seed-data/images");
+app.use("/api/seed-images", express.static(seedImages, { fallthrough: false }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
