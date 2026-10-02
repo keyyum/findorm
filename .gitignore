@@ -38,3 +38,6 @@ Thumbs.db
 
 # testing
 coverage/
+
+# scraped demo data (third-party photos and text, local use only, never commit)
+server/scripts/seed-data/

@@ -12,6 +12,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Photos served from the server by scripts/seedDorms.js, not stored on Cloudinary.
+const isLocalPhoto = (publicId) => publicId.startsWith("local/");
+
 // Fields an owner (or admin) may set. Anything else in the body is ignored,
 // so `owner`, `photos`, `_id` etc. can't be overwritten.
 const EDITABLE_FIELDS = [
@@ -203,7 +206,7 @@ export const deleteListing = async (req, res) => {
   await listing.deleteOne();
 
   // async wrapper: destroy() can also throw synchronously (e.g. missing Cloudinary keys).
-  const results = await Promise.allSettled(listing.photos.map(async (p) => cloudinary.uploader.destroy(p.publicId)));
+  const results = await Promise.allSettled(listing.photos.filter((p) => !isLocalPhoto(p.publicId)).map(async (p) => cloudinary.uploader.destroy(p.publicId)));
   for (const r of results) {
     if (r.status === "rejected") console.error("Cloudinary cleanup failed:", r.reason?.message || r.reason);
   }
@@ -250,7 +253,7 @@ export const deleteListingPhoto = async (req, res) => {
     throw httpError(404, "Photo not found.");
   }
 
-  await cloudinary.uploader.destroy(photo.publicId);
+  if (!isLocalPhoto(photo.publicId)) await cloudinary.uploader.destroy(photo.publicId);
   photo.deleteOne();
   await listing.save();
 
