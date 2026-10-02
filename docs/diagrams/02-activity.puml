@@ -1,0 +1,65 @@
+@startuml
+!include style.iuml
+title Reservation request: from submission to "Full" (FR-13 – FR-16)
+|Seeker|
+start
+:Open listing details;
+if (Logged in as seeker?) then (no)
+  :Prompt to log in;
+  stop
+else (yes)
+endif
+:Enter optional move-in date and note;
+:Click "Request 1 slot";
+|System|
+:Validate input\n(move-in date today or later,\nnote ≤ 500 characters);
+if (Input valid?) then (no)
+  :Show field errors;
+  |Seeker|
+  stop
+else (yes)
+endif
+|System|
+if (Listing has available slots?) then (no)
+  :Refuse: "This listing is full" (409);
+  |Seeker|
+  stop
+else (yes)
+endif
+|System|
+if (Seeker already has a Pending\nor Accepted request here?) then (yes)
+  :Refuse: duplicate request (409);
+  |Seeker|
+  stop
+else (no)
+endif
+|System|
+:Save reservation with status = Pending;
+:Show "Request sent. It's now Pending.";
+|Owner|
+:Open Incoming Requests;
+:Review seeker's name, move-in date and note;
+if (Decision?) then (Reject)
+  |System|
+  :Set status = Rejected,\nrecord respondedAt;
+  note right: Slots unchanged
+else (Accept)
+  |System|
+  if (availableSlots > 0?\n(checked and decreased\nin one atomic step)) then (no)
+    :Refuse accept: no slots left (409);
+    |Owner|
+    stop
+  else (yes)
+    |System|
+    :availableSlots = availableSlots − 1;
+    :Set status = Accepted,\nrecord respondedAt;
+    if (availableSlots = 0?) then (yes)
+      :Show listing as "Full";\nblock new requests and further accepts;
+    else (no)
+    endif
+  endif
+endif
+|Seeker|
+:See updated status in My Requests\n(Pending → Accepted / Rejected);
+stop
+@enduml
