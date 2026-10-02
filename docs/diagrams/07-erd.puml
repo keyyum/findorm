@@ -1,0 +1,72 @@
+@startuml
+!include style.iuml
+hide circle
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 70
+
+entity "users" as users {
+  * _id : ObjectId <<PK>>
+  --
+  * firstName : String(50)
+  * lastName : String(50)
+  * email : String <<unique>>
+  * password : String (bcrypt)
+  * role : seeker | owner | admin
+  phone : String (09XXXXXXXXX)
+  * isActive : Boolean
+  * createdAt / updatedAt : Date
+}
+
+entity "listings" as listings {
+  * _id : ObjectId <<PK>>
+  --
+  * owner : ObjectId <<FK users>>
+  * name : String(3–100)
+  * propertyType : Dormitory | Boarding House
+  * city : one of 17 Metro Manila LGUs
+  * address : String(5–200)
+  description : String(2000)
+  * monthlyRent : Integer 1–100000
+  * genderCategory : Male | Female | Any
+  amenities : String[] (fixed list)
+  houseRules : String(2000)
+  * capacity : Integer 1–500
+  * availableSlots : Integer 0–capacity
+  photos : [ {_id, url, publicId} ] (max 10)
+  * createdAt / updatedAt : Date
+}
+
+entity "reservations" as reservations {
+  * _id : ObjectId <<PK>>
+  --
+  * listing : ObjectId <<FK listings>>
+  * seeker : ObjectId <<FK users>>
+  * owner : ObjectId <<FK users>>
+  * status : Pending | Accepted | Rejected
+  moveInDate : Date (today or later)
+  message : String(500)
+  respondedAt : Date
+  * createdAt / updatedAt : Date
+}
+
+entity "inquiries" as inquiries {
+  * _id : ObjectId <<PK>>
+  --
+  * listing : ObjectId <<FK listings>>
+  * seeker : ObjectId <<FK users>>
+  * owner : ObjectId <<FK users>>
+  * messages : [ {_id, sender <<FK users>>,
+      body String(1000), createdAt} ]
+  * lastMessageAt : Date
+  * createdAt / updatedAt : Date
+  ..
+  unique (listing, seeker)
+}
+
+users ||--o{ listings : "owns"
+users ||--o{ reservations : "submits (seeker)"
+listings ||--o{ reservations : "receives"
+users ||--o{ inquiries : "starts (seeker)"
+listings ||--o{ inquiries : "is asked about"
+@enduml

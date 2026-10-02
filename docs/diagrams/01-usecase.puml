@@ -1,0 +1,51 @@
+@startuml
+!include style.iuml
+left to right direction
+actor "Visitor\n(not logged in)" as V
+actor "Accommodation\nSeeker" as S
+actor "Property Owner /\nLandlord" as O
+actor "System\nAdministrator" as A
+actor "Cloudinary\n(photo storage)" as C <<external>>
+S -|> V
+O -|> V
+
+rectangle "FINDorm" {
+  usecase "Register account\n(FR-01)" as UC1
+  usecase "Log in / Log out\n(FR-02)" as UC2
+  usecase "View / update account\n(FR-03)" as UC3
+  usecase "Search listings by location\n(FR-07)" as UC7
+  usecase "Filter listings\n(FR-08, FR-09)" as UC8
+  usecase "View listing details\n(FR-10)" as UC10
+  usecase "Send inquiry\n(FR-11)" as UC11
+  usecase "Reply to inquiry\n(FR-12)" as UC12
+  usecase "Submit reservation request\n(FR-13)" as UC13
+  usecase "View request status /\nwithdraw request (FR-15)" as UC15
+  usecase "Create / edit / delete listing\n(FR-04, FR-05)" as UC4
+  usecase "Upload listing photos\n(FR-05)" as UCP
+  usecase "Update available slots\n(FR-06)" as UC6
+  usecase "Accept / reject request\n(FR-14, FR-16)" as UC14
+  usecase "Manage user accounts\n(FR-17)" as UC17
+  usecase "Manage any listing\n(FR-17)" as UC17b
+}
+V --> UC1
+V --> UC2
+V --> UC7
+V --> UC10
+UC7 <.. UC8 : <<extend>>
+S --> UC3
+S --> UC11
+S --> UC13
+S --> UC15
+UC11 ..> UC2 : <<include>>
+UC13 ..> UC2 : <<include>>
+O --> UC3
+O --> UC4
+O --> UC6
+O --> UC12
+O --> UC14
+UC4 <.. UCP : <<extend>>
+A --> UC2
+A --> UC17
+A --> UC17b
+UCP --> C
+@enduml
