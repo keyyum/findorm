@@ -21,7 +21,7 @@ export default function NotAllowed({ area = "owner" }) {
         <p className="text-base leading-relaxed text-navy">
           {AREA[area] || AREA.owner} {user && `You’re logged in as ${article} ${user.role}.`}
         </p>
-        <Link to="/" className="mt-2 inline-flex h-11 items-center rounded-[10px] bg-navy px-5 text-[15px] font-medium text-white hover:bg-navy-900">Back to home</Link>
+        <Link to="/" className="press mt-2 inline-flex h-11 items-center rounded-[10px] bg-navy px-5 text-[15px] font-medium text-white hover:bg-navy-900">Back to home</Link>
       </div>
     </main>
   );

@@ -35,7 +35,7 @@ export default function ListingDetails() {
   if (state.status === "notfound")
     return (
       <Page width={880}>
-        <EmptyState icon={SearchIcon} title="Listing not found" action={<Link to="/" className="inline-flex h-12 items-center rounded-xl bg-navy px-6 text-[15px] font-medium text-white hover:bg-navy-900">Back to search</Link>}>
+        <EmptyState icon={SearchIcon} title="Listing not found" action={<Link to="/" className="press inline-flex h-12 items-center rounded-xl bg-navy px-6 text-[15px] font-medium text-white hover:bg-navy-900">Back to search</Link>}>
           This listing doesn’t exist or was removed by its owner.
         </EmptyState>
       </Page>
@@ -51,13 +51,13 @@ export default function ListingDetails() {
   const setListing = (patch) => setState((s) => ({ ...s, listing: { ...s.listing, ...patch } }));
 
   return (
-    <Page width={1200}>
+    <Page width={1200} className="max-lg:pb-28">
       <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-navy hover:underline">
         <ChevronLeftIcon size={16} /> Back to search
       </Link>
 
-      <div className="mt-5 flex items-start gap-10">
-        <div className="min-w-0 flex-1">
+      <div className="fade mt-5 flex items-start gap-10 max-lg:flex-col max-lg:gap-0">
+        <div className="min-w-0 flex-1 max-lg:w-full">
           <Gallery photos={l.photos || []} name={l.name} />
 
           <div className="mt-8 flex flex-col gap-3">
@@ -66,14 +66,14 @@ export default function ListingDetails() {
               <span className="rounded-full bg-haze px-2.5 py-1 text-xs font-semibold text-navy">{genderLabel[l.genderCategory]}</span>
               {l.isFull && <FullBadge />}
             </div>
-            <h1 className="text-[34px] leading-tight font-semibold tracking-[-0.02em]">{l.name}</h1>
+            <h1 className="text-[34px] leading-tight font-semibold tracking-[-0.02em] max-md:text-[26px]">{l.name}</h1>
             <p className="flex items-center gap-2 text-[15px] text-steel">
               <MapPinIcon size={18} /> {l.address}, {l.city}
             </p>
           </div>
 
-          <dl className="mt-6 grid grid-cols-3 overflow-hidden rounded-[14px] border border-line bg-white">
-            <Fact label="Monthly rent" value={<>{peso(l.monthlyRent)}<span className="text-sm font-normal text-steel"> / slot</span></>} />
+          <dl className="mt-6 grid grid-cols-3 max-sm:grid-cols-2 overflow-hidden rounded-[14px] border border-line bg-white">
+            <Fact label="Monthly rent" value={<>{peso(l.monthlyRent)}<span className="text-sm font-normal text-steel"> / slot</span></>} first />
             <Fact label="Available slots" value={l.isFull ? <span className="text-warning">Full</span> : <>{l.availableSlots}<span className="text-sm font-normal text-steel"> of {l.capacity}</span></>} />
             <Fact label="Capacity" value={<>{l.capacity}<span className="text-sm font-normal text-steel"> rooms / beds</span></>} last />
           </dl>
@@ -82,7 +82,7 @@ export default function ListingDetails() {
 
           <Section title="Amenities">
             {l.amenities?.length ? (
-              <ul className="grid grid-cols-3 gap-3">
+              <ul className="grid grid-cols-3 gap-3 max-sm:grid-cols-1">
                 {l.amenities.map((a) => (
                   <li key={a} className="flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium">
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-haze text-navy"><AmenityIcon name={a} /></span>
@@ -112,17 +112,18 @@ export default function ListingDetails() {
           </Section>
         </div>
 
-        <aside className="sticky top-6 w-[380px] shrink-0">
+        <aside id="action-panel" className="scroll-mt-4 lg:sticky lg:top-6 lg:w-[380px] lg:shrink-0 max-lg:mt-9 max-lg:w-full">
           <ActionPanel listing={l} setListing={setListing} />
         </aside>
       </div>
+      <MobileActionBar listing={l} />
     </Page>
   );
 }
 
-function Fact({ label, value, last }) {
+function Fact({ label, value, first, last }) {
   return (
-    <div className={`flex flex-col gap-1 px-5 py-4 ${last ? "" : "border-r border-line"}`}>
+    <div className={`flex flex-col gap-1 px-5 py-4 ${last ? "" : "border-r border-line"} ${first ? "max-sm:col-span-2 max-sm:border-r-0 max-sm:border-b" : ""}`}>
       <dt className="text-xs font-medium text-steel">{label}</dt>
       <dd className="text-xl font-semibold tabular-nums">{value}</dd>
     </div>
@@ -142,7 +143,7 @@ function Gallery({ photos, name }) {
   const [i, setI] = useState(0);
   if (!photos.length)
     return (
-      <div className="flex h-[420px] flex-col items-center justify-center gap-2 rounded-2xl bg-haze text-[#7f9cbc]">
+      <div className="flex h-[420px] flex-col items-center justify-center gap-2 rounded-2xl bg-haze max-md:h-[240px] text-[#7f9cbc]">
         <ImageIcon size={40} />
         <span className="text-sm font-medium">No photos yet</span>
       </div>
@@ -150,14 +151,17 @@ function Gallery({ photos, name }) {
   const idx = Math.min(i, photos.length - 1);
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative h-[420px] overflow-hidden rounded-2xl bg-haze">
-        <img src={photos[idx].url} alt={`${name}, photo ${idx + 1} of ${photos.length}`} className="h-full w-full object-cover" />
+      <div className="relative h-[420px] overflow-hidden rounded-2xl bg-haze max-md:h-[260px]">
+        {photos.map((p, n) => (
+          <img key={p._id || n} src={p.url} data-current={n === idx} aria-hidden={n !== idx} alt={n === idx ? `${name}, photo ${n + 1} of ${photos.length}` : ""}
+            className="xfade absolute inset-0 h-full w-full object-cover" />
+        ))}
         {photos.length > 1 && (
           <>
-            <button type="button" aria-label="Previous photo" onClick={() => setI((idx - 1 + photos.length) % photos.length)} className="absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow hover:bg-white">
+            <button type="button" aria-label="Previous photo" onClick={() => setI((idx - 1 + photos.length) % photos.length)} className="press absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow hover:bg-white">
               <ChevronLeftIcon />
             </button>
-            <button type="button" aria-label="Next photo" onClick={() => setI((idx + 1) % photos.length)} className="absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow hover:bg-white">
+            <button type="button" aria-label="Next photo" onClick={() => setI((idx + 1) % photos.length)} className="press absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow hover:bg-white">
               <ChevronRightIcon />
             </button>
             <span className="absolute right-3 bottom-3 rounded-full bg-ink/75 px-2.5 py-1 text-xs font-medium text-white tabular-nums">{idx + 1} / {photos.length}</span>
@@ -168,7 +172,7 @@ function Gallery({ photos, name }) {
         <div className="flex gap-2 overflow-x-auto pb-1">
           {photos.map((p, n) => (
             <button key={p._id || n} type="button" onClick={() => setI(n)} aria-label={`Show photo ${n + 1}`} aria-current={n === idx}
-              className={`h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 ${n === idx ? "border-navy" : "border-transparent opacity-70 hover:opacity-100"}`}>
+              className={`h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-[opacity,border-color] ${n === idx ? "border-navy" : "border-transparent opacity-70 hover:opacity-100"}`}>
               <img src={p.url} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
@@ -206,7 +210,7 @@ function ActionPanel({ listing: l, setListing }) {
       <PanelCard>
         <PriceHeader l={l} />
         <p className="text-sm leading-relaxed text-steel">Log in as a seeker to request a slot or message the owner.</p>
-        <Link to="/login" state={{ from: location.pathname }} className="inline-flex h-12 items-center justify-center rounded-xl bg-navy text-[15px] font-medium text-white hover:bg-navy-900">
+        <Link to="/login" state={{ from: location.pathname }} className="press inline-flex h-12 items-center justify-center rounded-xl bg-navy text-[15px] font-medium text-white hover:bg-navy-900">
           Log in to reserve or message
         </Link>
         <p className="text-center text-sm text-navy">
@@ -222,8 +226,8 @@ function ActionPanel({ listing: l, setListing }) {
         {isMine ? (
           <>
             <p className="text-sm text-steel">This is your listing.</p>
-            <Link to={`/owner/listings/${l._id}/edit`} className="inline-flex h-11 items-center justify-center rounded-[10px] bg-navy text-sm font-medium text-white hover:bg-navy-900">Edit listing</Link>
-            <Link to="/owner/listings" className="inline-flex h-11 items-center justify-center rounded-[10px] border border-sky-300 text-sm font-medium text-navy hover:bg-haze">Update availability</Link>
+            <Link to={`/owner/listings/${l._id}/edit`} className="press inline-flex h-11 items-center justify-center rounded-[10px] bg-navy text-sm font-medium text-white hover:bg-navy-900">Edit listing</Link>
+            <Link to="/owner/listings" className="press inline-flex h-11 items-center justify-center rounded-[10px] border border-sky-300 text-sm font-medium text-navy hover:bg-haze">Update availability</Link>
           </>
         ) : (
           <p className="text-sm leading-relaxed text-steel">Only seeker accounts can request slots or message owners.</p>
@@ -236,7 +240,7 @@ function ActionPanel({ listing: l, setListing }) {
       <PanelCard>
         <PriceHeader l={l} />
         <p className="text-sm text-steel">You’re viewing this as an admin.</p>
-        <Link to={`/admin/listings/${l._id}/edit`} className="inline-flex h-11 items-center justify-center rounded-[10px] bg-navy text-sm font-medium text-white hover:bg-navy-900">Edit as admin</Link>
+        <Link to={`/admin/listings/${l._id}/edit`} className="press inline-flex h-11 items-center justify-center rounded-[10px] bg-navy text-sm font-medium text-white hover:bg-navy-900">Edit as admin</Link>
       </PanelCard>
     );
 
@@ -248,10 +252,11 @@ function SeekerPanel({ l, setListing }) {
   return (
     <PanelCard>
       <PriceHeader l={l} />
-      <div role="tablist" aria-label="Actions" className="grid grid-cols-2 rounded-xl bg-haze p-1">
+      <div role="tablist" aria-label="Actions" className="relative grid grid-cols-2 rounded-xl bg-haze p-1">
+        <span aria-hidden="true" data-side={tab === "message" ? "right" : "left"} className="seg-pill absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-lg bg-white shadow-sm" />
         {[["reserve", "Request a slot", BedIcon], ["message", "Message owner", ChatIcon]].map(([k, label, Icon]) => (
           <button key={k} role="tab" type="button" aria-selected={tab === k} aria-controls={`panel-${k}`} id={`tab-${k}`} onClick={() => setTab(k)}
-            className={`flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-medium ${tab === k ? "bg-white text-ink shadow-sm" : "text-navy hover:text-ink"}`}>
+            className={`press relative flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-medium ${tab === k ? "text-ink" : "text-navy hover:text-ink"}`}>
             <Icon size={16} /> {label}
           </button>
         ))}
@@ -330,7 +335,7 @@ function ReserveForm({ l, setListing }) {
       <TextArea label="Note to the owner" optional rows={3} maxLength={LIMITS.reservationMessage} value={message} placeholder="Hi! I’m a 2nd year student at UST…"
         onChange={(e) => { setMessage(e.target.value); setErrors((x) => ({ ...x, message: undefined })); }} error={errors.message} disabled={busy} />
       <Button type="submit" size="lg" className="w-full" loading={busy}>{busy ? "Sending…" : "Request 1 slot"}</Button>
-      <p className="text-xs leading-relaxed text-steel">One request reserves one slot. No payment happens on FINDorm — you’ll arrange that with the owner.</p>
+      <p className="text-xs leading-relaxed text-steel">One request reserves one slot. No payment happens on FINDorm. You’ll arrange that with the owner.</p>
     </form>
   );
 }
@@ -371,18 +376,55 @@ function InquiryForm({ l }) {
   );
 }
 
+/** Below lg the action panel sits at the end of the page; this bar keeps the main action in reach. */
+function MobileActionBar({ listing: l }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  const [panelInView, setPanelInView] = useState(false);
+
+  useEffect(() => {
+    const el = document.getElementById("action-panel");
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setPanelInView(entry.isIntersecting), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const isSeeker = user?.role === "seeker";
+  if (user && !isSeeker) return null;
+
+  const cls = "press inline-flex h-12 shrink-0 items-center justify-center rounded-xl bg-navy px-5 text-[15px] font-medium text-white hover:bg-navy-900";
+  return (
+    <div data-open={!panelInView} className="bar-up fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(5,10,24,0.25)] lg:hidden">
+      <div className="mx-auto flex max-w-[640px] items-center justify-between gap-4">
+        <p className="min-w-0">
+          <span className="block text-lg font-semibold tabular-nums">{peso(l.monthlyRent)}<span className="text-[13px] font-normal text-steel"> / month</span></span>
+          <span className={`block text-[13px] font-medium ${l.isFull ? "text-warning" : "text-success"}`}>{l.isFull ? "No slots left" : `${plural(l.availableSlots, "slot")} left`}</span>
+        </p>
+        {isSeeker ? (
+          <button type="button" className={cls} onClick={() => document.getElementById("action-panel")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+            {l.isFull ? "Message owner" : "Request a slot"}
+          </button>
+        ) : (
+          <Link to="/login" state={{ from: location.pathname }} className={cls}>Log in to reserve</Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DetailsSkeleton() {
   return (
     <Page width={1200}>
-      <div aria-busy="true" aria-label="Loading listing" className="mt-9 flex gap-10">
-        <div className="flex-1">
-          <Skel className="h-[420px] !rounded-2xl" />
+      <div aria-busy="true" aria-label="Loading listing" className="mt-9 flex gap-10 max-lg:flex-col max-lg:gap-6">
+        <div className="flex-1 max-lg:w-full">
+          <Skel className="h-[420px] !rounded-2xl max-md:!h-[260px]" />
           <Skel className="mt-8 h-5 w-40" />
           <Skel className="mt-4 h-9 w-2/3" />
           <Skel className="mt-4 h-4 w-1/2" />
           <Skel className="mt-6 h-24 !rounded-[14px]" />
         </div>
-        <Skel className="h-[380px] w-[380px] !rounded-2xl" />
+        <Skel className="h-[380px] w-[380px] !rounded-2xl max-lg:!h-[220px] max-lg:!w-full" />
       </div>
     </Page>
   );

@@ -27,7 +27,7 @@ export default function Layout() {
 /** Centered page column used by most screens. */
 export function Page({ width = 1200, className = "", children }) {
   return (
-    <main className={`mx-auto w-full px-6 pt-10 pb-16 ${className}`} style={{ maxWidth: width + 48 }}>
+    <main className={`fade mx-auto w-full px-6 pt-10 pb-16 ${className}`} style={{ maxWidth: width + 48 }}>
       {children}
     </main>
   );

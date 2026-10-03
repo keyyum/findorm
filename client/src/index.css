@@ -23,6 +23,14 @@
   --color-success-bg: #d3efe4;
   --color-warning: #7a5504;
   --color-warning-bg: #f6e6c4;
+
+  /* Motion tokens. `ease-out` for anything entering or leaving, `ease-in-out`
+     for things moving on screen, `ease-drawer` for sheets. Hover and colour
+     changes use plain `ease` (the default below). */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --default-transition-timing-function: ease;
 }
 
 @layer base {
@@ -30,6 +38,13 @@
   body { @apply bg-page text-ink font-sans; }
   :focus-visible { outline: 2px solid var(--color-navy); outline-offset: 2px; }
   button:not(:disabled) { cursor: pointer; }
+  /* Hover and state colours ease everywhere, not just on <Button>. Table rows stay instant. */
+  a, button, input, select, textarea, label {
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
 }
 
 @keyframes shimmer { 0% { background-position: -600px 0 } 100% { background-position: 600px 0 } }
@@ -38,8 +53,183 @@
   background-size: 1200px 100%;
   animation: shimmer 1.3s linear infinite;
 }
-@keyframes toast-in { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
-.toast-in { animation: toast-in .2s ease-out; }
+
+/* ---------- Motion ---------- */
+
+/* Press feedback for anything that behaves like a button. */
+.press {
+  transition:
+    scale 160ms var(--ease-out),
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+.press:active:not(:disabled) { scale: 0.97; }
+
+/* Menus anchored to a trigger (account menu). Stays mounted; closed = hidden. */
+.pop {
+  transition:
+    opacity 200ms var(--ease-out),
+    scale 200ms var(--ease-out),
+    visibility 0s;
+}
+.pop[data-open="false"] {
+  visibility: hidden;
+  opacity: 0;
+  scale: 0.95;
+  pointer-events: none;
+  transition:
+    opacity 150ms var(--ease-out),
+    scale 150ms var(--ease-out),
+    visibility 0s linear 150ms;
+}
+
+/* Panel that drops from under the navbar (mobile menu). */
+.drop {
+  transition:
+    opacity 200ms var(--ease-out),
+    translate 200ms var(--ease-out),
+    visibility 0s;
+}
+.drop[data-open="false"] {
+  visibility: hidden;
+  opacity: 0;
+  translate: 0 -8px;
+  pointer-events: none;
+  transition:
+    opacity 150ms var(--ease-out),
+    translate 150ms var(--ease-out),
+    visibility 0s linear 150ms;
+}
+
+/* Bar pinned to the bottom edge that slides in and out (listing action bar). */
+.bar-up {
+  transition:
+    translate 250ms var(--ease-out),
+    visibility 0s;
+}
+.bar-up[data-open="false"] {
+  visibility: hidden;
+  translate: 0 100%;
+  transition:
+    translate 200ms var(--ease-out),
+    visibility 0s linear 200ms;
+}
+
+/* Full-screen sheet below lg (Home filters). From lg up it is a plain sidebar. */
+@media (width < 64rem) {
+  .sheet {
+    transition:
+      translate 500ms var(--ease-drawer),
+      visibility 0s;
+  }
+  .sheet[data-open="false"] {
+    visibility: hidden;
+    translate: 0 100%;
+    transition:
+      translate 300ms var(--ease-drawer),
+      visibility 0s linear 300ms;
+  }
+}
+
+/* Confirmation dialog + its backdrop. Centered, so it scales from the middle. */
+.dialog {
+  transition:
+    opacity 250ms var(--ease-out),
+    scale 250ms var(--ease-out);
+}
+.dialog-backdrop { transition: opacity 250ms var(--ease-out); }
+/* Closing is the system answering, so it is quicker than opening. */
+.dialog[data-open="false"] { opacity: 0; scale: 0.96; transition-duration: 150ms; }
+.dialog-backdrop[data-open="false"] { opacity: 0; transition-duration: 150ms; }
+@starting-style {
+  .dialog[data-open="true"] { opacity: 0; scale: 0.96; }
+  .dialog-backdrop[data-open="true"] { opacity: 0; }
+}
+
+/* Toast: transitions, not keyframes, so a second toast never restarts mid-way. */
+.toast {
+  transition:
+    opacity 400ms ease,
+    translate 400ms ease;
+}
+.toast[data-leaving="true"] { opacity: 0; translate: 0 100%; }
+@starting-style {
+  .toast { opacity: 0; translate: 0 100%; }
+}
+
+/* Content that replaces a skeleton: fade only, nothing moves. */
+.fade { transition: opacity 150ms var(--ease-out); }
+@starting-style {
+  .fade { opacity: 0; }
+}
+
+/* One-off entrances (landing hero, auth form, alerts). --i staggers siblings. */
+.rise {
+  transition:
+    opacity 300ms var(--ease-out),
+    translate 300ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 50ms);
+}
+@starting-style {
+  .rise { opacity: 0; translate: 0 8px; }
+  .rise .rise { translate: none; } /* one movement per entrance */
+}
+
+/* Stacked gallery photos crossfade; only the current one is visible. */
+.xfade { transition: opacity 200ms ease; }
+.xfade[data-current="false"] { opacity: 0; }
+
+/* Listing card hover: the shadow lives on a layer that fades in, so nothing repaints. */
+.lift { position: relative; }
+.lift::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 12px 32px -12px rgba(5, 10, 24, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+/* Its photo fades in once loaded, and leans in slightly under a mouse. */
+.lift-img {
+  transition:
+    scale 250ms var(--ease-out),
+    opacity 200ms ease;
+}
+.lift-img[data-loaded="false"] { opacity: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .lift:hover::after { opacity: 1; }
+  .lift:hover .lift-img { scale: 1.03; }
+}
+
+/* Two-option segmented control: the white pill slides between the halves. */
+.seg-pill { transition: translate 250ms var(--ease-in-out); }
+.seg-pill[data-side="right"] { translate: 100% 0; }
+
+/* A message the user just sent. */
+@keyframes msg-in { from { opacity: 0; translate: 0 8px; scale: 0.97 } }
+.msg-in { animation: msg-in 200ms var(--ease-out); transform-origin: bottom right; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keep the fades, drop the movement. */
+  .press:active:not(:disabled) { scale: 1; }
+  .pop[data-open="false"], .dialog[data-open="false"] { scale: 1; }
+  .drop[data-open="false"], .toast[data-leaving="true"] { translate: none; }
+  .bar-up, .sheet { transition-duration: 0s; }
+  .bar-up[data-open="false"], .sheet[data-open="false"] { transition: visibility 0s; }
+  .rise { transition: opacity 200ms ease; }
+  .lift:hover .lift-img { scale: 1; }
+  .seg-pill { transition-duration: 0s; }
+  .msg-in { animation: none; }
+  .skel { animation: none; }
+  @starting-style {
+    .dialog[data-open="true"] { scale: 1; }
+    .toast, .rise { translate: none; }
+  }
+}
 
 .hero-photo {
   background-color: #050a18;

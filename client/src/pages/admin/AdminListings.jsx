@@ -107,7 +107,7 @@ export default function AdminListings() {
   );
 
   return (
-    <div>
+    <div className="fade">
       <PageTitle title="Listings" sub={state.data ? `${state.data.total} ${state.data.total === 1 ? "listing" : "listings"}${hasFilters ? " match" : ""}` : " "}>
         {hasFilters && <Button variant="ghost" onClick={clear}>Clear filters</Button>}
       </PageTitle>
@@ -135,14 +135,14 @@ export default function AdminListings() {
           Showing listings by
           <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-navy pr-1 pl-3 text-[13px] font-medium text-white">
             Owner: {ownerName || "selected owner"}
-            <button type="button" aria-label="Remove owner filter" onClick={() => setParam({ ownerId: "" })} className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 hover:bg-white/25">
+            <button type="button" aria-label="Remove owner filter" onClick={() => setParam({ ownerId: "" })} className="press flex h-6 w-6 items-center justify-center rounded-full bg-white/15 hover:bg-white/25">
               <CloseIcon size={14} />
             </button>
           </span>
         </div>
       )}
 
-      <div className="mt-5 overflow-hidden rounded-[14px] border border-line bg-white">
+      <div className="mt-5 overflow-x-auto rounded-[14px] border border-line bg-white">
         {priceError ? (
           <div className="p-6"><EmptyState icon={WarningIcon} title="Check the price range" dashed={false}>Min price can’t be more than max price.</EmptyState></div>
         ) : state.status === "error" ? (
@@ -154,7 +154,7 @@ export default function AdminListings() {
             </EmptyState>
           </div>
         ) : (
-          <table className="w-full table-fixed border-collapse text-sm">
+          <table className="w-full min-w-[1000px] table-fixed border-collapse text-sm">
             <colgroup><col className="w-[84px]" /><col /><col className="w-[140px]" /><col className="w-[108px]" /><col className="w-[124px]" /><col className="w-[88px]" /><col className="w-[92px]" /><col className="w-[176px]" /></colgroup>
             <thead className="bg-page">
               <tr>
@@ -198,9 +198,9 @@ export default function AdminListings() {
                         )}
                       </td>
                       <td className={`${td} pr-5 text-right whitespace-nowrap`}>
-                        <Link to={`/listings/${l._id}`} className="inline-flex h-8 items-center rounded-md px-2 text-[13px] font-medium text-navy hover:bg-haze">View</Link>
-                        <Link to={`/admin/listings/${l._id}/edit`} className="inline-flex h-8 items-center rounded-md px-2 text-[13px] font-medium text-navy hover:bg-haze">Edit</Link>
-                        <button type="button" onClick={() => setConfirm(l)} className="inline-flex h-8 items-center rounded-md px-2 text-[13px] font-medium text-danger hover:bg-[#fbeceb]">Delete</button>
+                        <Link to={`/listings/${l._id}`} className="press inline-flex h-8 items-center rounded-md px-2 text-[13px] font-medium text-navy hover:bg-haze">View</Link>
+                        <Link to={`/admin/listings/${l._id}/edit`} className="press inline-flex h-8 items-center rounded-md px-2 text-[13px] font-medium text-navy hover:bg-haze">Edit</Link>
+                        <button type="button" onClick={() => setConfirm(l)} className="press inline-flex h-8 items-center rounded-md px-2 text-[13px] font-medium text-danger hover:bg-[#fbeceb]">Delete</button>
                       </td>
                     </tr>
                   ))}

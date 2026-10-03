@@ -69,8 +69,8 @@ export default function Register() {
   }
 
   return (
-    <AuthShell heading="Find your next dorm in Metro Manila." sub="Browse rooms across all 17 cities, message owners and request a slot — all in one place.">
-      <form noValidate onSubmit={onSubmit} aria-busy={busy} className="flex w-[480px] flex-col gap-6">
+    <AuthShell heading="Find your next dorm in Metro Manila." sub="Browse rooms across all 17 cities, message owners and request a slot, all in one place.">
+      <form noValidate onSubmit={onSubmit} aria-busy={busy} className="rise flex w-full max-w-[480px] flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-[30px] leading-tight font-semibold tracking-[-0.02em]">Create your account</h1>
           <p className="text-[15px] text-navy">
@@ -97,7 +97,7 @@ export default function Register() {
               return (
                 <label
                   key={value}
-                  className={`relative flex cursor-pointer flex-col gap-2 rounded-xl border p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-navy ${
+                  className={`press relative flex cursor-pointer flex-col gap-2 rounded-xl border p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-navy ${
                     on ? "border-navy bg-haze shadow-[inset_0_0_0_1px_#243a5a]" : errors.role ? "border-danger bg-white" : "border-line bg-white hover:border-sky"
                   }`}
                 >
@@ -112,7 +112,7 @@ export default function Register() {
           {errors.role && <span id="role-msg" className="text-[13px] text-danger">{errors.role}</span>}
         </fieldset>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 max-[420px]:grid-cols-1">
           <TextField label="First name" autoComplete="given-name" maxLength={50} value={v.firstName} onChange={set("firstName")} error={errors.firstName} disabled={busy} />
           <TextField label="Last name" autoComplete="family-name" maxLength={50} value={v.lastName} onChange={set("lastName")} error={errors.lastName} disabled={busy} />
         </div>

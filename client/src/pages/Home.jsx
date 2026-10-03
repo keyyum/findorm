@@ -5,8 +5,8 @@ import { CITIES, GENDER_CATEGORIES, PAGE_SIZE, PROPERTY_TYPES } from "../lib/con
 import { useAuth } from "../context/AuthContext";
 import manila from "../assets/manila.jpg";
 import ListingCard, { ListingCardSkeleton } from "../components/ListingCard";
-import { ChevronDownIcon, MapPinIcon, SearchIcon, WarningIcon } from "../components/Icons";
-import { Button, EmptyState, FieldError, Pagination, Skel } from "../components/ui";
+import { ChevronDownIcon, CloseIcon, FilterIcon, MapPinIcon, SearchIcon, WarningIcon } from "../components/Icons";
+import { Button, EmptyState, FieldError, Pagination, Skel, useStagger } from "../components/ui";
 
 const SORTS = [
   { value: "newest", label: "Newest first" },
@@ -21,10 +21,13 @@ const POPULAR = [
   { label: "BGC, Taguig", city: "Taguig", q: "" },
 ];
 
+// The hero entrance is for the first look at the site, not every return to Browse.
+let heroPlayed = false;
+
 function Chip({ checked, onChange, name, value, children }) {
   return (
     <label
-      className={`relative inline-flex h-[34px] cursor-pointer items-center rounded-full border px-3.5 text-[13px] font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-navy ${
+      className={`press relative inline-flex h-[34px] cursor-pointer items-center rounded-full border px-3.5 text-[13px] font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-navy ${
         checked ? "border-navy bg-navy text-white" : "border-line bg-white text-navy hover:border-sky"
       }`}
     >
@@ -37,6 +40,11 @@ function Chip({ checked, onChange, name, value, children }) {
 /** FR-07 to FR-09 · Home: landing hero + search, filters, results. Public (D-10). */
 export default function Home() {
   const { user } = useAuth();
+  const [intro] = useState(() => !heroPlayed);
+  useEffect(() => {
+    heroPlayed = true;
+  }, []);
+  const rise = (i) => ({ style: intro ? { "--i": i } : undefined });
   const [params, setParams] = useSearchParams();
   const get = (k) => params.get(k) || "";
   const filters = Object.fromEntries(FILTER_KEYS.map((k) => [k, get(k)]));
@@ -58,6 +66,20 @@ export default function Home() {
 
   const [state, setState] = useState({ status: "loading", data: null, error: "" });
   const resultsRef = useRef(null);
+  const stagger = useStagger(state.status, intro);
+  // Below lg the filters live in a full-screen sheet instead of a sidebar.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const onKey = (e) => e.key === "Escape" && setFiltersOpen(false);
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [filtersOpen]);
 
   const priceError =
     filters.minPrice && filters.maxPrice && Number(filters.minPrice) > Number(filters.maxPrice)
@@ -116,17 +138,17 @@ export default function Home() {
     <>
       {/* Landing hero */}
       <section className="hero-photo text-mist" style={{ "--hero-img": `url(${manila})` }} aria-labelledby="hero-h1">
-        <div className="mx-auto flex max-w-[1440px] flex-col px-[120px] pt-20 pb-16 max-xl:px-10">
-          <span className="text-xs font-semibold tracking-[0.1em] text-[#8aa9cb] uppercase">Dorms &amp; boarding houses · all 17 cities</span>
-          <h1 id="hero-h1" className="mt-4 max-w-[820px] text-[60px] leading-[1.02] font-semibold tracking-[-0.035em] text-white">
+        <div className="mx-auto flex max-w-[1440px] flex-col px-[120px] pt-20 pb-16 max-xl:px-10 max-md:px-4 max-md:pt-10 max-md:pb-10">
+          <span style={rise(0).style} className={`text-xs font-semibold tracking-[0.1em] text-[#8aa9cb] uppercase ${intro ? "rise" : ""}`}>Dorms &amp; boarding houses · all 17 cities</span>
+          <h1 id="hero-h1" style={rise(1).style} className={`${intro ? "rise" : ""} mt-4 max-w-[820px] text-[60px] leading-[1.02] max-lg:text-[48px] max-md:text-[38px] max-md:leading-[1.08] font-semibold tracking-[-0.035em] text-white`}>
             Find your dorm in Metro Manila.
           </h1>
-          <p className="mt-5 max-w-[560px] text-lg leading-relaxed text-[#c3d7ea]">
+          <p style={rise(2).style} className={`${intro ? "rise" : ""} mt-5 max-w-[560px] text-lg leading-relaxed text-[#c3d7ea] max-md:text-base`}>
             Compare rent, slots and amenities, message owners directly, and request a slot. No account needed to browse.
           </p>
 
-          <form role="search" onSubmit={submitHero} className="mt-9 flex h-[72px] w-full max-w-[1000px] items-center rounded-2xl bg-white p-2.5 shadow-[0_24px_48px_-16px_rgba(5,10,24,0.6)] focus-within:shadow-[0_0_0_3px_rgba(106,143,184,0.55),0_24px_48px_-16px_rgba(5,10,24,0.6)]">
-            <label className="relative flex h-[52px] w-[260px] shrink-0 items-center text-steel">
+          <form role="search" onSubmit={submitHero} style={rise(3).style} className={`${intro ? "rise" : ""} mt-9 flex h-[72px] w-full max-w-[1000px] items-center rounded-2xl bg-white p-2.5 max-md:mt-7 max-md:h-auto max-md:flex-col max-md:items-stretch max-md:gap-1 shadow-[0_24px_48px_-16px_rgba(5,10,24,0.6)] focus-within:shadow-[0_0_0_3px_rgba(106,143,184,0.55),0_24px_48px_-16px_rgba(5,10,24,0.6)]`}>
+            <label className="relative flex h-[52px] w-[260px] shrink-0 items-center text-steel max-md:w-full max-md:border-b max-md:border-line">
               <span className="sr-only">City</span>
               <MapPinIcon className="absolute left-4" />
               <select value={cityDraft} onChange={(e) => setCityDraft(e.target.value)} className="h-[52px] w-full cursor-pointer appearance-none bg-transparent pr-9 pl-12 text-base font-medium text-ink focus:outline-none">
@@ -135,21 +157,21 @@ export default function Home() {
               </select>
               <ChevronDownIcon size={16} className="pointer-events-none absolute right-3" />
             </label>
-            <span aria-hidden="true" className="h-8 w-px shrink-0 bg-line" />
+            <span aria-hidden="true" className="h-8 w-px shrink-0 bg-line max-md:hidden" />
             <label className="relative flex h-[52px] flex-1 items-center text-steel">
               <span className="sr-only">Keyword</span>
               <SearchIcon className="absolute left-[18px]" />
               <input type="search" value={qDraft} onChange={(e) => setQDraft(e.target.value)} maxLength={100} placeholder="Name, street or area, e.g. Sampaloc"
                 className="h-[52px] w-full bg-transparent pr-4 pl-[50px] text-base text-ink placeholder:text-[#7f9cbc] focus:outline-none" />
             </label>
-            <Button type="submit" size="lg" className="!h-[52px] !px-8 !text-base">Search</Button>
+            <Button type="submit" size="lg" className="!h-[52px] !px-8 !text-base max-md:mt-1 max-md:w-full">Search</Button>
           </form>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2.5 text-[13px] text-[#a8c2dc]">
+          <div style={rise(4).style} className={`${intro ? "rise" : ""} mt-5 flex flex-wrap items-center gap-2.5 text-[13px] text-[#a8c2dc]`}>
             <span>Popular:</span>
             {POPULAR.map((p) => (
               <button key={p.label} type="button" onClick={() => { update({ city: p.city, q: p.q }); resultsRef.current?.scrollIntoView({ behavior: "smooth" }); }}
-                className="inline-flex h-8 items-center rounded-full border border-[rgba(221,234,246,0.28)] bg-[rgba(221,234,246,0.10)] px-3.5 font-medium text-mist hover:bg-[rgba(221,234,246,0.22)]">
+                className="press inline-flex h-8 items-center rounded-full border border-[rgba(221,234,246,0.28)] bg-[rgba(221,234,246,0.10)] px-3.5 font-medium text-mist hover:bg-[rgba(221,234,246,0.22)]">
                 {p.label}
               </button>
             ))}
@@ -158,11 +180,20 @@ export default function Home() {
       </section>
 
       {/* Filters + results */}
-      <div ref={resultsRef} className="mx-auto flex w-full max-w-[1440px] scroll-mt-4 items-start gap-10 px-16 pt-10 pb-16 max-xl:px-8">
-        <aside aria-label="Filters" className="sticky top-6 flex w-[264px] shrink-0 flex-col">
+      <div ref={resultsRef} className="mx-auto flex w-full max-w-[1440px] scroll-mt-4 items-start gap-10 px-16 pt-10 pb-16 max-xl:px-8 max-md:px-4 max-md:pt-6 max-md:pb-10">
+        <aside
+          aria-label="Filters"
+          data-open={filtersOpen}
+          className="sheet flex flex-col lg:sticky lg:top-6 lg:w-[264px] lg:shrink-0 max-lg:fixed max-lg:inset-0 max-lg:z-50 max-lg:overflow-y-auto max-lg:bg-white max-lg:px-5 max-lg:pt-4 max-lg:pb-28"
+        >
           <div className="flex items-center justify-between border-b border-line pb-4">
             <h2 className="text-base font-semibold tracking-tight">Filters</h2>
-            {activeCount > 0 && <span className="rounded-full bg-mist px-2 py-0.5 text-xs font-medium text-navy">{activeCount} active</span>}
+            <div className="flex items-center gap-3">
+              {activeCount > 0 && <span className="rounded-full bg-mist px-2 py-0.5 text-xs font-medium text-navy">{activeCount} active</span>}
+              <button type="button" onClick={() => setFiltersOpen(false)} aria-label="Close filters" className="press -mr-2 flex h-11 w-11 items-center justify-center rounded-lg hover:bg-haze lg:hidden">
+                <CloseIcon size={22} />
+              </button>
+            </div>
           </div>
 
           <fieldset className="border-b border-line py-5">
@@ -214,8 +245,8 @@ export default function Home() {
                 <span className="text-xs text-steel">Hide full listings</span>
               </span>
               <input type="checkbox" role="switch" checked={filters.available === "true"} onChange={(e) => update({ available: e.target.checked ? "true" : "" })} className="sr-only" />
-              <span aria-hidden="true" className={`relative h-[22px] w-10 shrink-0 rounded-full border ${filters.available === "true" ? "border-navy bg-navy" : "border-sky-300 bg-haze"}`}>
-                <span className={`absolute top-[2px] left-[2px] h-4 w-4 rounded-full bg-white shadow transition-transform ${filters.available === "true" ? "translate-x-[18px]" : ""}`} />
+              <span aria-hidden="true" className={`relative h-[22px] w-10 shrink-0 rounded-full border transition-colors ${filters.available === "true" ? "border-navy bg-navy" : "border-sky-300 bg-haze"}`}>
+                <span className={`absolute top-[2px] left-[2px] h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ease-out ${filters.available === "true" ? "translate-x-[18px]" : ""}`} />
               </span>
             </label>
           </div>
@@ -223,10 +254,16 @@ export default function Home() {
           <Button variant="ghost" className="mt-5 w-full !border-sky" onClick={clearAll} disabled={activeCount === 0}>
             Clear filters
           </Button>
+
+          <div className="fixed inset-x-0 bottom-0 border-t border-line bg-white p-4 lg:hidden">
+            <Button className="w-full" onClick={() => setFiltersOpen(false)}>
+              {state.status === "ready" ? `Show ${data.total} ${data.total === 1 ? "place" : "places"}` : "Show results"}
+            </Button>
+          </div>
         </aside>
 
         <section aria-label="Results" className="min-w-0 flex-1">
-          <div className="flex h-11 items-center justify-between">
+          <div className="flex h-11 items-center justify-between gap-3">
             {state.status === "loading" ? (
               <Skel className="h-[18px] w-40" />
             ) : (
@@ -234,10 +271,15 @@ export default function Home() {
                 {state.status === "ready" ? `${data.total} ${data.total === 1 ? "place" : "places"}${filters.city ? ` in ${filters.city}` : ""}` : ""}
               </p>
             )}
+            <button type="button" onClick={() => setFiltersOpen(true)} className="press inline-flex h-10 items-center gap-2 rounded-md border border-sky bg-white px-3.5 text-sm font-medium text-navy hover:border-navy lg:hidden">
+              <FilterIcon size={16} />
+              Filters
+              {activeCount > 0 && <span className="rounded-full bg-navy px-1.5 text-xs text-white">{activeCount}</span>}
+            </button>
             <label className="flex items-center gap-2.5 text-[13px] text-steel">
-              Sort by
+              <span className="max-sm:sr-only">Sort by</span>
               <span className="relative">
-                <select value={sort} onChange={(e) => update({ sort: e.target.value })} className="h-10 w-[200px] cursor-pointer appearance-none rounded-md border border-sky bg-white pr-9 pl-3 text-sm text-ink hover:border-navy">
+                <select value={sort} onChange={(e) => update({ sort: e.target.value })} className="h-10 w-[200px] cursor-pointer appearance-none max-sm:w-[164px] rounded-md border border-sky bg-white pr-9 pl-3 text-sm text-ink hover:border-navy">
                   {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
                 <ChevronDownIcon size={16} className="pointer-events-none absolute top-3 right-3" />
@@ -256,7 +298,7 @@ export default function Home() {
             {priceError ? (
               <EmptyState icon={WarningIcon} title="Check the price range">Min price can’t be more than max price.</EmptyState>
             ) : state.status === "loading" ? (
-              <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2" aria-busy="true" aria-label="Loading listings">
+              <div className="grid grid-cols-3 gap-6 max-xl:grid-cols-2 max-sm:grid-cols-1" aria-busy="true" aria-label="Loading listings">
                 {Array.from({ length: 6 }, (_, i) => <ListingCardSkeleton key={i} />)}
               </div>
             ) : state.status === "error" ? (
@@ -269,8 +311,8 @@ export default function Home() {
               </EmptyState>
             ) : (
               <>
-                <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2">
-                  {items.map((l) => <ListingCard key={l._id} listing={l} />)}
+                <div className="fade grid grid-cols-3 gap-6 max-xl:grid-cols-2 max-sm:grid-cols-1">
+                  {items.map((l, i) => <ListingCard key={l._id} listing={l} {...stagger(i)} />)}
                 </div>
                 <div className="mt-8">
                   <Pagination page={data.page} totalPages={data.totalPages} total={data.total} limit={data.limit}
@@ -283,13 +325,13 @@ export default function Home() {
       </div>
 
       {!user && (
-        <section className="mx-auto w-full max-w-[1440px] px-16 pb-16 max-xl:px-8">
-          <div className="flex items-center justify-between rounded-[18px] bg-[linear-gradient(120deg,#111b2e_0%,#243a5a_100%)] px-12 py-10 text-mist">
+        <section className="mx-auto w-full max-w-[1440px] px-16 pb-16 max-xl:px-8 max-md:px-4 max-md:pb-10">
+          <div className="flex items-center justify-between rounded-[18px] bg-[linear-gradient(120deg,#111b2e_0%,#243a5a_100%)] px-12 py-10 text-mist max-md:flex-col max-md:items-start max-md:gap-6 max-md:px-6 max-md:py-8">
             <div className="flex flex-col gap-2">
               <h2 className="text-2xl font-semibold tracking-tight text-white">Own a dorm or boarding house?</h2>
               <p className="text-base text-[#c3d7ea]">List it on FINDorm for free and handle requests and inquiries in one place.</p>
             </div>
-            <Link to="/register" className="inline-flex h-12 items-center rounded-xl bg-white px-6 text-[15px] font-medium text-ink hover:bg-mist">List your place</Link>
+            <Link to="/register" className="press inline-flex h-12 items-center rounded-xl bg-white px-6 text-[15px] font-medium text-ink hover:bg-mist">List your place</Link>
           </div>
         </section>
       )}
@@ -299,9 +341,9 @@ export default function Home() {
 
 function ActiveChip({ label, onRemove }) {
   return (
-    <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-navy pr-1 pl-3 font-medium text-white">
+    <span className="fade inline-flex h-[30px] items-center gap-1.5 rounded-full bg-navy pr-1 pl-3 font-medium text-white">
       {label}
-      <button type="button" onClick={onRemove} aria-label={`Remove ${label}`} className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 hover:bg-white/25">
+      <button type="button" onClick={onRemove} aria-label={`Remove ${label}`} className="press flex h-6 w-6 items-center justify-center rounded-full bg-white/15 hover:bg-white/25">
         <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" d="M18 6L6 18M6 6L18 18" /></svg>
       </button>
     </span>

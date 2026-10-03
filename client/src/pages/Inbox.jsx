@@ -51,7 +51,7 @@ export default function Inbox() {
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="flex items-center gap-4 border-b border-haze px-5 py-[18px]">
                 <Skel className="h-11 w-11 !rounded-full" />
-                <div className="flex flex-1 flex-col gap-2"><Skel className="h-4 w-56" /><Skel className="h-3 w-36" /><Skel className="h-3 w-[460px]" /></div>
+                <div className="flex flex-1 flex-col gap-2"><Skel className="h-4 w-56" /><Skel className="h-3 w-36" /><Skel className="h-3 w-[460px] max-w-full" /></div>
               </div>
             ))}
           </div>
@@ -59,19 +59,19 @@ export default function Inbox() {
           <EmptyState icon={WarningIcon} title="Couldn’t load inquiries" action={<Button variant="ghost" onClick={() => load(false)}>Try again</Button>}>{state.error}</EmptyState>
         ) : items.length === 0 ? (
           <EmptyState icon={ChatIcon} title="No inquiries yet"
-            action={!isOwner && <Link to="/" className="inline-flex h-12 items-center rounded-xl bg-navy px-6 text-[15px] font-medium text-white hover:bg-navy-900">Browse listings</Link>}>
+            action={!isOwner && <Link to="/" className="press inline-flex h-12 items-center rounded-xl bg-navy px-6 text-[15px] font-medium text-white hover:bg-navy-900">Browse listings</Link>}>
             {isOwner ? "Messages from seekers about your listings will appear here." : "Have a question about a place? Message the owner from its listing page."}
           </EmptyState>
         ) : (
           <>
-            <ul aria-label="Conversations" className="overflow-hidden rounded-[14px] border border-line bg-white">
+            <ul aria-label="Conversations" className="fade overflow-hidden rounded-[14px] border border-line bg-white">
               {items.map((t) => {
                 const other = isOwner ? t.seeker : t.owner; // api-spec list has no owner; falls back below
                 const otherName = other ? fullName(other) : "Owner of this place";
                 const mine = senderId(t.lastMessage?.sender) === user._id;
                 return (
                   <li key={t._id} className="border-b border-haze last:border-b-0">
-                    <Link to={`/inquiries/${t._id}`} className="flex items-center gap-4 px-5 py-[18px] hover:bg-page">
+                    <Link to={`/inquiries/${t._id}`} className="flex items-center gap-4 px-5 py-[18px] transition-colors hover:bg-page max-sm:gap-3 max-sm:px-4">
                       {other ? <Avatar text={initials(other)} size={44} /> : (
                         <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-haze text-navy"><HomeIcon size={20} /></span>
                       )}
