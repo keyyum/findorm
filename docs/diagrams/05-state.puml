@@ -1,0 +1,13 @@
+@startuml
+!include style.iuml
+title Reservation request status (FR-15, D-05, D-06)
+[*] --> Pending : Seeker submits request\n[listing has slots,\nno open request]
+Pending --> Accepted : Owner accepts\n[availableSlots > 0]\n/ availableSlots − 1
+Pending --> Rejected : Owner rejects\n/ slots unchanged
+Pending --> [*] : Seeker withdraws\n/ request deleted
+Pending --> [*] : Owner or admin deletes\nthe listing / cascade delete
+Accepted --> [*] : Listing deleted
+Rejected --> [*] : Listing deleted
+note right of Accepted : Final — cannot be undone (D-06).\nOwner raises slots manually\nif the deal falls through.
+note right of Rejected : Final. Seeker may submit\na new request later.
+@enduml

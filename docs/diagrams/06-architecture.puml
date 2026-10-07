@@ -1,0 +1,34 @@
+@startuml
+!include style.iuml
+top to bottom direction
+skinparam nodesep 30
+skinparam ranksep 45
+
+actor "Seeker / Owner / Admin\n(web browser)" as U
+
+package "Front end — client/  (React + Vite + Tailwind CSS)" as FE {
+  component "Pages\nHome, ListingDetails, ListingForm,\nMyRequests, IncomingRequests,\nInbox, Thread, Account, Admin" as Pages
+  component "AuthContext + ProtectedRoute\n(role-based screens)" as AuthCtx
+  component "lib/api.js\n(Axios client, attaches JWT)" as Axios
+}
+
+package "Back end — server/  (Node.js + Express REST API)" as BE {
+  component "Routes\n/api/auth  /users  /listings\n/reservations  /inquiries  /admin" as Routes
+  component "Middleware\nauthenticateToken, requireRole,\nuploadPhotos, errorHandler" as MW
+  component "Controllers\nvalidation, business rules,\ntransactions" as Ctrl
+  component "Mongoose models\nUser, Listing,\nReservation, Inquiry" as Models
+}
+
+database "MongoDB\nusers · listings ·\nreservations · inquiries" as DB
+cloud "Cloudinary\n(listing photos)" as CL
+
+U --> Pages : HTTPS
+Pages -right-> AuthCtx
+Pages --> Axios
+Axios --> Routes : JSON over HTTP\nAuthorization: Bearer JWT
+Routes -right-> MW
+MW -right-> Ctrl
+Ctrl --> Models
+Models --> DB : Mongoose ODM
+Ctrl --> CL : upload / delete images
+@enduml

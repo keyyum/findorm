@@ -1,0 +1,35 @@
+@startuml
+!include style.iuml
+title Owner accepts a reservation request (FR-14, FR-16)
+autonumber
+actor Owner
+participant "React front end\n(IncomingRequests page)" as FE
+participant "Express API\n/api/reservations/:id/accept" as API
+participant "Auth middleware" as AUTH
+database "MongoDB" as DB
+
+Owner -> FE : Click "Accept"\nand confirm
+FE -> API : PATCH /api/reservations/:id/accept\nAuthorization: Bearer <JWT>
+API -> AUTH : authenticateToken + requireRole("owner")
+AUTH -> DB : find user by id (role, isActive)
+DB --> AUTH : owner, active
+AUTH --> API : req.user = { id, role }
+API -> DB : find reservation { _id, owner: req.user.id }
+alt not found / someone else's
+  API --> FE : 404 Request not found
+else status ≠ Pending
+  API --> FE : 409 Already answered or withdrawn
+else Pending
+  API -> DB : findOneAndUpdate listing\n{ availableSlots > 0 } → $inc availableSlots −1
+  alt no slot left
+    DB --> API : null
+    API --> FE : 409 No slots left — listing is full
+  else slot taken
+    DB --> API : updated listing
+    API -> DB : set reservation status = Accepted,\nrespondedAt = now
+    DB --> API : updated reservation
+    API --> FE : 200 Reservation (Accepted)
+    FE --> Owner : Toast "Accepted Juan's request";\nslot count and "Full" badge refresh
+  end
+end
+@enduml

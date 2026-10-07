@@ -1,0 +1,96 @@
+@startuml
+!include style.iuml
+hide empty members
+skinparam nodesep 60
+skinparam ranksep 70
+
+enum Role <<enumeration>> {
+  seeker
+  owner
+  admin
+}
+enum ReservationStatus <<enumeration>> {
+  Pending
+  Accepted
+  Rejected
+}
+
+class User {
+  - _id : ObjectId
+  - firstName : String
+  - lastName : String
+  - email : String {unique}
+  - password : String {bcrypt hash}
+  - role : Role
+  - phone : String [0..1]
+  - isActive : Boolean = true
+  - createdAt : Date
+  + register()
+  + login() : JWT
+  + updateProfile()
+  + changePassword()
+}
+
+class Listing {
+  - _id : ObjectId
+  - owner : User
+  - name : String
+  - propertyType : String
+  - city : String
+  - address : String
+  - description : String
+  - monthlyRent : Number
+  - genderCategory : String
+  - amenities : String[*]
+  - houseRules : String
+  - capacity : Number
+  - availableSlots : Number
+  + isFull() : Boolean
+  + updateAvailability(n)
+  + takeSlot() : Boolean
+}
+
+class Photo {
+  - _id : ObjectId
+  - url : String
+  - publicId : String
+}
+
+class Reservation {
+  - _id : ObjectId
+  - listing : Listing
+  - seeker : User
+  - owner : User
+  - status : ReservationStatus
+  - moveInDate : Date [0..1]
+  - message : String [0..1]
+  - respondedAt : Date [0..1]
+  + accept()
+  + reject()
+  + withdraw()
+}
+
+class Inquiry {
+  - _id : ObjectId
+  - listing : Listing
+  - seeker : User
+  - owner : User
+  - lastMessageAt : Date
+  + addMessage(sender, body)
+}
+
+class Message {
+  - _id : ObjectId
+  - sender : User
+  - body : String
+  - createdAt : Date
+}
+
+User "1" -- "0..*" Listing : owns >
+Listing "1" *-- "0..10" Photo : has >
+User "1" -- "0..*" Reservation : submits >
+Listing "1" -- "0..*" Reservation : receives >
+User "1" -- "0..*" Inquiry : starts >
+Listing "1" -- "0..*" Inquiry : is asked about >
+Inquiry "1" *-- "1..*" Message : contains >
+@enduml
