@@ -7,7 +7,7 @@ import { Page } from "../components/Layout";
 import { REQUESTS_CHANGED } from "../components/Navbar";
 import StatusBadge from "../components/StatusBadge";
 import { BedIcon, CheckCircleIcon, CloseIcon, RefreshIcon, WarningIcon } from "../components/Icons";
-import { Avatar, Button, ConfirmDialog, EmptyState, FullBadge, PageTitle, Pagination, SelectField, Skel } from "../components/ui";
+import { Avatar, Button, ConfirmDialog, EmptyState, FullBadge, PageTitle, Pagination, SelectField, Skel, useStagger } from "../components/ui";
 
 const LIMIT = 10;
 
@@ -66,6 +66,7 @@ export default function IncomingRequests() {
   }
 
   const items = state.data?.items || [];
+  const stagger = useStagger(state.status);
   const listingOptions = myListings.map((l) => ({ value: l._id, label: l.name }));
 
   return (
@@ -74,16 +75,16 @@ export default function IncomingRequests() {
         <Button variant="ghost" onClick={load} disabled={state.status === "loading"}><RefreshIcon size={16} /> Refresh</Button>
       </PageTitle>
 
-      <div className="mt-6 flex items-end gap-3">
-        <div role="tablist" aria-label="Filter by status" className="flex flex-1 gap-1.5">
+      <div className="mt-6 flex items-end gap-3 max-md:flex-col max-md:items-stretch">
+        <div role="tablist" aria-label="Filter by status" className="flex flex-1 flex-wrap gap-1.5">
           {["Pending", "Accepted", "Rejected", ""].map((t) => (
             <button key={t || "all"} role="tab" type="button" aria-selected={status === t} onClick={() => { setStatus(t); setPage(1); }}
-              className={`h-9 rounded-full px-4 text-sm font-medium ${status === t ? "bg-navy text-white" : "border border-line bg-white text-navy hover:border-sky"}`}>
+              className={`press h-9 rounded-full px-4 text-sm font-medium ${status === t ? "bg-navy text-white" : "border border-line bg-white text-navy hover:border-sky"}`}>
               {t || "All"}
             </button>
           ))}
         </div>
-        <SelectField label="Listing" className="w-[280px]" placeholder="All listings" options={listingOptions} value={listingId}
+        <SelectField label="Listing" className="w-[280px] max-md:w-full" placeholder="All listings" options={listingOptions} value={listingId}
           onChange={(e) => { setListingId(e.target.value); setPage(1); }} />
       </div>
 
@@ -98,14 +99,14 @@ export default function IncomingRequests() {
           </EmptyState>
         ) : (
           <>
-            <ul className="flex flex-col gap-3">
-              {items.map((r) => {
+            <ul className="fade flex flex-col gap-3">
+              {items.map((r, i) => {
                 const full = r.listing?.isFull;
                 return (
-                  <li key={r._id} className="flex gap-4 rounded-[14px] border border-line bg-white p-5">
+                  <li key={r._id} {...stagger(i, "flex gap-4 rounded-[14px] border border-line bg-white p-5 max-sm:gap-3 max-sm:p-4")}>
                     <Avatar text={initials(r.seeker)} size={44} />
                     <div className="flex min-w-0 flex-1 flex-col gap-2">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start justify-between gap-4 max-sm:flex-col max-sm:gap-2">
                         <div className="flex flex-col gap-0.5">
                           <span className="text-base font-semibold">{fullName(r.seeker)}</span>
                           <span className="flex items-center gap-2 text-[13px] text-steel">
@@ -122,8 +123,8 @@ export default function IncomingRequests() {
                       </div>
                       {r.message && <p className="rounded-[10px] bg-page px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line text-navy">“{r.message}”</p>}
                       {r.status === "Pending" && (
-                        <div className="flex items-center justify-end gap-2 border-t border-haze pt-3">
-                          {full && <span className="mr-auto text-[13px] text-warning">Listing is full — raise available slots to accept.</span>}
+                        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-haze pt-3">
+                          {full && <span className="mr-auto text-[13px] text-warning">Listing is full. Raise available slots to accept.</span>}
                           <Button variant="dangerGhost" size="sm" onClick={() => setConfirm({ r, action: "reject" })}><CloseIcon size={16} /> Reject</Button>
                           <Button size="sm" disabled={full} title={full ? "No slots left" : undefined} onClick={() => setConfirm({ r, action: "accept" })}>
                             <CheckCircleIcon size={16} /> Accept

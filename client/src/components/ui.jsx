@@ -19,7 +19,7 @@ export function Button({ variant = "primary", size = "md", loading = false, clas
       type="button"
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={`inline-flex items-center justify-center gap-2 font-medium transition-colors disabled:cursor-not-allowed ${SIZE[size]} ${BTN[variant]} ${className}`}
+      className={`press inline-flex items-center justify-center gap-2 font-medium disabled:cursor-not-allowed ${SIZE[size]} ${BTN[variant]} ${className}`}
       {...rest}
     >
       {loading && <Spinner light={variant === "primary" || variant === "danger"} />}
@@ -56,7 +56,7 @@ export function FieldError({ id, children }) {
 }
 
 const inputCls = (bad) =>
-  `h-[42px] w-full rounded-md border bg-white px-3 text-[15px] text-ink placeholder:text-[#7f9cbc] disabled:bg-page ${
+  `h-[42px] w-full rounded-md border bg-white px-3 text-[15px] text-ink transition-colors placeholder:text-[#7f9cbc] disabled:bg-page ${
     bad ? "border-danger" : "border-sky hover:border-navy"
   }`;
 
@@ -94,7 +94,7 @@ export function PasswordField({ label, error, hint, id: idProp, className = "", 
           onClick={() => setShown((s) => !s)}
           aria-label={`${shown ? "Hide" : "Show"} ${String(label).toLowerCase()}`}
           aria-pressed={shown}
-          className="absolute top-[3px] right-[3px] flex h-9 w-9 items-center justify-center rounded-md text-steel hover:bg-haze hover:text-ink"
+          className="press absolute top-[3px] right-[3px] flex h-9 w-9 items-center justify-center rounded-md text-steel hover:bg-haze hover:text-ink"
         >
           {shown ? <EyeClosedIcon size={18} /> : <EyeIcon size={18} />}
         </button>
@@ -155,7 +155,7 @@ export function TextArea({ label, error, hint, optional, maxLength, value = "", 
         value={value}
         aria-invalid={!!error}
         aria-describedby={error || hint ? msg : undefined}
-        className={`w-full resize-y rounded-md border bg-white px-3 py-2.5 text-[15px] leading-relaxed text-ink placeholder:text-[#7f9cbc] ${error ? "border-danger" : "border-sky hover:border-navy"}`}
+        className={`w-full resize-y rounded-md border bg-white px-3 py-2.5 text-[15px] leading-relaxed text-ink transition-colors placeholder:text-[#7f9cbc] ${error ? "border-danger" : "border-sky hover:border-navy"}`}
         {...rest}
       />
       {error ? <FieldError id={msg}>{error}</FieldError> : hint ? <span id={msg} className="text-[13px] text-steel">{hint}</span> : null}
@@ -173,7 +173,7 @@ export function Alert({ tone = "danger", title, children, icon: Icon = WarningIc
     success: "bg-success-bg border-success text-success",
   };
   return (
-    <div role={tone === "danger" ? "alert" : "status"} className={`flex gap-3 rounded-[10px] border px-4 py-3.5 ${tones[tone]}`}>
+    <div role={tone === "danger" ? "alert" : "status"} className={`rise flex gap-3 rounded-[10px] border px-4 py-3.5 ${tones[tone]}`}>
       <Icon size={20} className="mt-px" />
       <div className="flex flex-col gap-0.5">
         {title && <span className="text-[15px] leading-snug font-semibold">{title}</span>}
@@ -191,7 +191,7 @@ export function EmptyState({ icon: Icon, title, children, action, dashed = true 
   return (
     <div
       role="status"
-      className={`flex flex-col items-center justify-center gap-3.5 rounded-[14px] bg-white px-10 py-16 text-center ${dashed ? "border border-dashed border-sky-300" : "border border-line"}`}
+      className={`fade flex flex-col items-center justify-center gap-3.5 rounded-[14px] bg-white px-10 py-16 text-center max-sm:px-5 max-sm:py-12 ${dashed ? "border border-dashed border-sky-300" : "border border-line"}`}
     >
       {Icon && (
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-haze text-navy">
@@ -207,14 +207,30 @@ export function EmptyState({ icon: Icon, title, children, action, dashed = true 
 
 export function PageTitle({ title, sub, children }) {
   return (
-    <div className="flex items-end justify-between gap-4">
+    <div className="flex items-end justify-between gap-4 max-sm:flex-col max-sm:items-start">
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-[30px] leading-tight font-semibold tracking-[-0.02em]">{title}</h1>
+        <h1 className="text-[30px] leading-tight font-semibold tracking-[-0.02em] max-sm:text-[26px]">{title}</h1>
         {sub && <p className="text-[15px] text-steel">{sub}</p>}
       </div>
-      {children && <div className="flex items-center gap-3">{children}</div>}
+      {children && <div className="flex flex-wrap items-center gap-3">{children}</div>}
     </div>
   );
+}
+
+/* ---------- Motion ---------- */
+
+/**
+ * Staggers the first batch of rows a page shows. Later batches (a filter, a tab,
+ * a refresh) get no entrance, because those happen many times per visit.
+ * Usage: const stagger = useStagger(state.status); <li {...stagger(i, "flex ...")} />
+ */
+export function useStagger(status, enabled = true) {
+  const seenReady = useRef(false);
+  const firstBatch = useRef(true);
+  if (status === "ready") seenReady.current = true;
+  else if (seenReady.current) firstBatch.current = false;
+  const on = enabled && firstBatch.current;
+  return (i, className = "") => (on ? { className: `rise ${className}`, style: { "--i": Math.min(i, 8) } } : { className });
 }
 
 /* ---------- Pagination ---------- */
@@ -229,7 +245,7 @@ export function Pagination({ page, totalPages, onChange, total, limit }) {
     if (n === 1 || n === totalPages || Math.abs(n - page) <= 1) nums.push(n);
     else if (nums[nums.length - 1] !== "…") nums.push("…");
   }
-  const base = "flex h-[34px] min-w-[34px] items-center justify-center rounded-lg border px-2 text-[13px] font-semibold";
+  const base = "press flex h-[34px] min-w-[34px] items-center justify-center rounded-lg border px-2 text-[13px] font-semibold";
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="text-[13px] text-steel tabular-nums">Showing {from}–{to} of {total}</span>
@@ -262,11 +278,31 @@ export function Pagination({ page, totalPages, onChange, total, limit }) {
 
 /* ---------- Modal ---------- */
 
+/** True while `open`, and for `ms` afterwards so an exit transition can finish. */
+export function usePresence(open, ms) {
+  const [lingering, setLingering] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setLingering(true);
+      return;
+    }
+    const t = setTimeout(() => setLingering(false), ms);
+    return () => clearTimeout(t);
+  }, [open, ms]);
+  return open || lingering;
+}
+
 /**
  * Confirmation dialog. Esc and the backdrop cancel (unless busy). Focus moves
  * to the dialog on open and back to the trigger on close.
  */
-export function ConfirmDialog({ open, title, children, icon: Icon, tone = "danger", confirmLabel, busyLabel, busy, onConfirm, onCancel }) {
+export function ConfirmDialog(props) {
+  const { open, busy, onConfirm, onCancel } = props;
+  // Callers clear their state on close, so render the closing dialog from the last open props.
+  const shown = useRef(props);
+  if (open) shown.current = props;
+  const { title, children, icon: Icon, tone = "danger", confirmLabel, busyLabel } = shown.current;
+  const present = usePresence(open, 150); // matches the .dialog exit in index.css
   const ref = useRef(null);
   useEffect(() => {
     if (!open) return;
@@ -289,13 +325,13 @@ export function ConfirmDialog({ open, title, children, icon: Icon, tone = "dange
     };
   }, [open, busy, onCancel]);
 
-  if (!open) return null;
+  if (!present) return null;
   const toneCls = { danger: "bg-danger-bg text-danger", success: "bg-success-bg text-success", info: "bg-haze text-navy" }[tone];
   const btnVariant = tone === "danger" ? "danger" : "primary";
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
-      <div aria-hidden="true" className="absolute inset-0 bg-[rgba(5,10,24,0.55)]" onClick={() => !busy && onCancel()} />
-      <div ref={ref} role="alertdialog" aria-modal="true" aria-labelledby="dlg-title" aria-describedby="dlg-body" className="relative flex w-full max-w-[500px] flex-col gap-5 rounded-2xl bg-white p-7 shadow-[0_32px_64px_-20px_rgba(5,10,24,0.45)]">
+    <div className={`fixed inset-0 z-40 flex items-center justify-center p-4 ${open ? "" : "pointer-events-none"}`}>
+      <div aria-hidden="true" data-open={open} className="dialog-backdrop absolute inset-0 bg-[rgba(5,10,24,0.55)]" onClick={() => !busy && onCancel()} />
+      <div ref={ref} role="alertdialog" aria-modal="true" aria-labelledby="dlg-title" aria-describedby="dlg-body" data-open={open} inert={!open} className="dialog relative flex w-full max-w-[500px] flex-col gap-5 rounded-2xl bg-white p-7 shadow-[0_32px_64px_-20px_rgba(5,10,24,0.45)]">
         {Icon && (
           <span className={`flex h-12 w-12 items-center justify-center rounded-full ${toneCls}`}>
             <Icon size={24} />

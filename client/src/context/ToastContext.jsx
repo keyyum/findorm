@@ -3,18 +3,32 @@ import Toast from "../components/Toast";
 
 const ToastContext = createContext(null);
 
+const EXIT_MS = 400; // matches .toast in index.css
+
 /** One shared toast for every "Saved" / "Deleted" message. Auto-hides after 3s. */
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
   const timer = useRef();
+  const exitTimer = useRef();
 
   const show = useCallback((kind, message) => {
     clearTimeout(timer.current);
-    setToast({ kind, message, id: Date.now() });
-    timer.current = setTimeout(() => setToast(null), 3200);
+    clearTimeout(exitTimer.current);
+    setToast({ kind, message, id: Date.now(), leaving: false });
+    timer.current = setTimeout(() => {
+      // Leave the way it came in, then unmount.
+      setToast((t) => t && { ...t, leaving: true });
+      exitTimer.current = setTimeout(() => setToast(null), EXIT_MS);
+    }, 3200);
   }, []);
 
-  useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current);
+      clearTimeout(exitTimer.current);
+    },
+    []
+  );
 
   const api = useMemo(
     () => ({
@@ -28,8 +42,8 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="pointer-events-none fixed right-8 bottom-8 z-50">
-        {toast && <Toast key={toast.id} kind={toast.kind} message={toast.message} />}
+      <div className="pointer-events-none fixed right-8 bottom-8 z-50 max-sm:right-4 max-sm:bottom-4">
+        {toast && <Toast key={toast.id} kind={toast.kind} message={toast.message} leaving={toast.leaving} />}
       </div>
     </ToastContext.Provider>
   );
