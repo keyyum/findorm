@@ -23,6 +23,8 @@ Last run (2 Oct 2026, local MongoDB-compatible database): 43 Pass, 0 Fail, 3 Pen
 
 For presentations, start the server on an empty database and run `npm run seed-demo`. It creates 3 owners, 3 seekers, 7 listings, requests in every status, and one conversation. All demo accounts use the password `Password123` (e.g. `maria@findorm.test` owner, `juan@findorm.test` seeker).
 
+To fill search with more places, also run `npm run seed-dorms` (after `seed-demo`, since `seed-demo` needs an empty database). It loads real dorm listings from `server/scripts/seed-data/*.json`, one demo owner per file (`owner.<file>@findorm.test`, password saved to `seed-data/owners.txt`). That folder holds third-party listing text and photos for local use only, so it is gitignored. Get a copy from a teammate. Without Cloudinary keys the server serves the photos itself. Re-running adds only missing listings, and `npm run seed-dorms -- --reset` removes them all.
+
 ## Diagrams
 
 `docs/diagrams/` holds the UML diagrams used in the documentation as PlantUML sources (`.puml`) and rendered images (`.png`). To re-render after editing: `plantuml -tpng docs/diagrams/*.puml`.

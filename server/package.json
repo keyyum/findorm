@@ -9,7 +9,8 @@
     "start": "node index.js",
     "create-admin": "node scripts/createAdmin.js",
     "test:api": "node tests/api.test.mjs",
-    "seed-demo": "node scripts/seedDemo.js"
+    "seed-demo": "node scripts/seedDemo.js",
+    "seed-dorms": "node scripts/seedDorms.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
