@@ -1,0 +1,215 @@
+[
+ {
+  "name": "City Lofts Ladies Dorm",
+  "propertyType": "Dormitory",
+  "city": "San Juan",
+  "address": "City Lofts, San Juan City, a few steps from Puregold Agora, near Greenhills and SM Centerpoint",
+  "description": "A ladies-only dorm near Puregold Agora with a mix of room types, including loft-style units. Each room has its own toilet and bath, a kitchenette, lights and beds, and holds two to four people. SM Centerpoint and Greenhills Shopping Center are one ride away.",
+  "monthlyRent": 2500,
+  "genderCategory": "Female",
+  "amenities": [
+   "Private Bathroom",
+   "Kitchen Access"
+  ],
+  "houseRules": "",
+  "capacity": 40,
+  "availableSlots": 6,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "houseRules"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/city-lofts-ladies-dorm-san-juan-city/",
+  "photos": [
+   "images/east-1-1.jpg"
+  ]
+ },
+ {
+  "name": "San Juan Ladies Boarding House near SM Sta. Mesa",
+  "propertyType": "Boarding House",
+  "city": "San Juan",
+  "address": "San Juan City, Metro Manila, near Puregold San Juan, Makro Shaw and Cardinal Santos Hospital",
+  "description": "A unit with one big bedroom of double-deck beds for six to eight lady boarders, plus a living area, kitchen, laundry area and a shared bathroom. Each boarder gets a lockable built-in cabinet, and the unit comes with a fridge, fans, stove, ironing board and cookware. It sits close to Greenhills, Galleria and several hospitals and exclusive schools.",
+  "monthlyRent": 2000,
+  "genderCategory": "Female",
+  "amenities": [
+   "Electric Fan",
+   "Shared Bathroom",
+   "Kitchen Access",
+   "Laundry Area"
+  ],
+  "houseRules": "",
+  "capacity": 8,
+  "availableSlots": 2,
+  "estimatedFields": [
+   "monthlyRent",
+   "capacity",
+   "availableSlots",
+   "address",
+   "houseRules"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/san-juan-city-boarding-house-metro-manila/",
+  "photos": []
+ },
+ {
+  "name": "Kalumpang Room near PLMar",
+  "propertyType": "Boarding House",
+  "city": "Marikina",
+  "address": "Kalumpang area, Marikina City, near Ayala Malls Feliz, Marikina Bayan and PLMar SHS",
+  "description": "A rented room within walking distance of Ayala Malls Feliz, the Marikina public market and PLMar senior high school, with jeeps and tricycles to SM Marikina and Santolan. The owner prefers one or two tidy tenants. Lights and water are billed separately.",
+  "monthlyRent": 2000,
+  "genderCategory": "Any",
+  "amenities": [
+   "Electric Fan"
+  ],
+  "houseRules": "Preferably 1-2 persons only. Electricity and water not included.",
+  "capacity": 2,
+  "availableSlots": 1,
+  "estimatedFields": [
+   "monthlyRent",
+   "capacity",
+   "availableSlots",
+   "genderCategory",
+   "amenities"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/room-for-rent-in-kalumpang-area-marikina/",
+  "photos": [
+   "images/east-3-1.jpg",
+   "images/east-3-2.jpg",
+   "images/east-3-3.jpg"
+  ]
+ },
+ {
+  "name": "Midtown Studio Rooms, San Roque",
+  "propertyType": "Boarding House",
+  "city": "Marikina",
+  "address": "134 Dragon St. cor. Kapwa St., Midtown Subdivision, San Roque, Marikina City",
+  "description": "Studio-type rooms, each with a sink and a shared comfort room, on the ground and second floors. Electricity is on a sub-meter and water is charged per head. Street parking only and no pets.",
+  "monthlyRent": 3000,
+  "genderCategory": "Any",
+  "amenities": [
+   "Shared Bathroom"
+  ],
+  "houseRules": "No pets. Street parking only. 1 month advance, 1 month deposit plus a utilities deposit.",
+  "capacity": 12,
+  "availableSlots": 3,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "genderCategory",
+   "amenities"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/room-for-rent-in-marikina-3k/",
+  "photos": [
+   "images/east-4-1.jpg",
+   "images/east-4-2.jpg",
+   "images/east-4-3.jpg"
+  ]
+ },
+ {
+  "name": "Shoe Avenue Rooms, Concepcion",
+  "propertyType": "Boarding House",
+  "city": "Marikina",
+  "address": "Shoe Avenue, Concepcion, Marikina City, near C-Point building",
+  "description": "Three rooms in a Concepcion boarding house: a common-bath room for one to two people, one for three, and a larger room for four to five with its own CR. Each room has sub-metered electricity and water. Close to the Shoe Avenue strip and local transport.",
+  "monthlyRent": 1300,
+  "genderCategory": "Any",
+  "amenities": [
+   "Shared Bathroom",
+   "Private Bathroom"
+  ],
+  "houseRules": "No parking. 1 month advance and 1 month deposit.",
+  "capacity": 10,
+  "availableSlots": 3,
+  "estimatedFields": [
+   "monthlyRent",
+   "capacity",
+   "availableSlots",
+   "genderCategory"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/room-for-rent-in-shoe-ave-marikina-2600-only/",
+  "photos": [
+   "images/east-5-1.jpg",
+   "images/east-5-2.jpg"
+  ]
+ },
+ {
+  "name": "Malanday Budget Rooms, Danube St.",
+  "propertyType": "Boarding House",
+  "city": "Marikina",
+  "address": "14 Danube St., Purok 4, Malanday, Marikina City",
+  "description": "Low-cost rooms for two to three people in a house with two comfort rooms and a shared kitchen. Room rates vary by unit, with the cheapest at 1,800 a month. Utilities are split per person.",
+  "monthlyRent": 1800,
+  "genderCategory": "Any",
+  "amenities": [
+   "Shared Bathroom",
+   "Kitchen Access"
+  ],
+  "houseRules": "Electricity and water billed per person. 1 month deposit, 2 months advance.",
+  "capacity": 10,
+  "availableSlots": 2,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "genderCategory"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/room-for-rent-in-marikina-only-1800/",
+  "photos": [
+   "images/east-6-1.jpg",
+   "images/east-6-2.jpg"
+  ]
+ },
+ {
+  "name": "Malaya St. Rooms, Malanday",
+  "propertyType": "Boarding House",
+  "city": "Marikina",
+  "address": "Malaya St., Malanday, Marikina City",
+  "description": "Rooms for two to three people, offered at two price points, with the smaller unit at 3,500 a month. No pets and no motorcycle parking. A refundable deposit covers water and electricity.",
+  "monthlyRent": 1750,
+  "genderCategory": "Any",
+  "amenities": [
+   "Shared Bathroom"
+  ],
+  "houseRules": "No pets. No motorcycle parking. 2 months consumable deposit plus 1,500 refundable utilities deposit.",
+  "capacity": 6,
+  "availableSlots": 2,
+  "estimatedFields": [
+   "monthlyRent",
+   "capacity",
+   "availableSlots",
+   "genderCategory",
+   "amenities"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/room-for-rent-in-malanday-marikina-near-marikina-3-5-5-5k-month/",
+  "photos": [
+   "images/east-7-1.jpg"
+  ]
+ },
+ {
+  "name": "Balana Townhouse Lady Bedspacers",
+  "propertyType": "Boarding House",
+  "city": "Marikina",
+  "address": "Unit 8 Balana Townhouse #2, Katipunan St., Concepcion Uno, Marikina City, near Baytree and OLOPSC",
+  "description": "A newly renovated house for women with bedspaces and private rooms, two toilets and baths, and a car garage. Lights and water are free, and tenants can cook and do laundry on site. A security guard is on duty and there is no curfew; jeeps run to Cubao, Ortigas and Riverbanks.",
+  "monthlyRent": 2000,
+  "genderCategory": "Female",
+  "amenities": [
+   "Kitchen Access",
+   "Laundry Area",
+   "Security Guard",
+   "Water Included",
+   "Electricity Included",
+   "Parking",
+   "Shared Bathroom"
+  ],
+  "houseRules": "Ladies only. No curfew.",
+  "capacity": 12,
+  "availableSlots": 4,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/lady-bedspacers-marikina/",
+  "photos": []
+ }
+]

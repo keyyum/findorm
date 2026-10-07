@@ -1,0 +1,293 @@
+[
+ {
+  "name": "Female Bedspace near MOA (Bautista St, Pasay)",
+  "propertyType": "Boarding House",
+  "city": "Pasay",
+  "address": "Bautista Street, Barangay 138, Pasay City, near Metropoint and LRT/MRT stations",
+  "description": "A women-only bedspace in a Pasay apartment that takes groups of three to four, with at most one male in a group. Beds come with mattresses, lockers and fans, and residents share the kitchen, dining, living and laundry areas. The neighborhood is monitored by barangay CCTV, and Mall of Asia, Baclaran and Makati are each a single ride away.",
+  "monthlyRent": 2500,
+  "genderCategory": "Female",
+  "amenities": [
+   "WiFi",
+   "Electric Fan",
+   "Shared Bathroom",
+   "Kitchen Access",
+   "Laundry Area",
+   "CCTV",
+   "Parking"
+  ],
+  "houseRules": "Minimum 6-month stay. 1 month advance and 2 months deposit. Valid ID or NBI clearance required. Electricity, water, WiFi and gas are shared among tenants.",
+  "capacity": 12,
+  "availableSlots": 3,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots"
+  ],
+  "sourceUrl": "https://www.dorm.ph/listing/4ceabd7e-25bc-454a-ae7a-bf24c3b5711a",
+  "photos": [
+   "images/south-1-1.jpg",
+   "images/south-1-2.jpg",
+   "images/south-1-3.jpg"
+  ]
+ },
+ {
+  "name": "Private Room with Shared Bathroom, Gotamco St",
+  "propertyType": "Boarding House",
+  "city": "Pasay",
+  "address": "Gotamco Street, Barangay 16, Pasay City",
+  "description": "Rooms on the third floor of a family house in Pasay, each with access to a shared bathroom. It is a basic, low-cost set-up suited to students or workers who want a private space. Note that the rooms are reached by stairs.",
+  "monthlyRent": 3500,
+  "genderCategory": "Any",
+  "amenities": [
+   "Shared Bathroom"
+  ],
+  "houseRules": "",
+  "capacity": 8,
+  "availableSlots": 2,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "genderCategory",
+   "amenities",
+   "houseRules"
+  ],
+  "sourceUrl": "https://www.dorm.ph/listing/6256d3b2-eff6-47fb-a24e-1f9d08668f57",
+  "photos": [
+   "images/south-2-1.jpg",
+   "images/south-2-2.jpg",
+   "images/south-2-3.jpg"
+  ]
+ },
+ {
+  "name": "Aguara St Bedspace near Baclaran Church",
+  "propertyType": "Dormitory",
+  "city": "Pasay",
+  "address": "Aguara Street, Baclaran, Pasay City, near Baclaran Church",
+  "description": "Air-conditioned bedspace in a room shared by eight people, a short walk from Baclaran Church and the LRT-1 Baclaran area. Pillows and bedsheets are provided, so a new tenant can move in with just a bag. Photos show steel bunk beds, a wall fan and a small kitchen sink.",
+  "monthlyRent": 3500,
+  "genderCategory": "Any",
+  "amenities": [
+   "Air Conditioning",
+   "Electric Fan",
+   "Shared Bathroom",
+   "Kitchen Access"
+  ],
+  "houseRules": "",
+  "capacity": 24,
+  "availableSlots": 4,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "genderCategory",
+   "amenities",
+   "houseRules"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/bedspace-room-in-pasay-near-baclaran-church/",
+  "photos": [
+   "images/south-3-1.jpg",
+   "images/south-3-2.jpg",
+   "images/south-3-3.jpg"
+  ]
+ },
+ {
+  "name": "Sun Valley Female Bedspace, Parañaque",
+  "propertyType": "Boarding House",
+  "city": "Parañaque",
+  "address": "4030 St. Culdesac, Sun Valley, Parañaque City",
+  "description": "A bedspace for women in Sun Valley, with bunk beds in simple furnished rooms. Water and electricity are already part of the monthly rent. The area is close to SM Bicutan and the Sucat corridor.",
+  "monthlyRent": 3500,
+  "genderCategory": "Female",
+  "amenities": [
+   "Electric Fan",
+   "Shared Bathroom",
+   "Water Included",
+   "Electricity Included"
+  ],
+  "houseRules": "",
+  "capacity": 10,
+  "availableSlots": 3,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "amenities",
+   "houseRules"
+  ],
+  "sourceUrl": "https://www.suzyrent.com/for-rent/national-capital-region-ncr/female-bedspace-in-paranaque/suzy-71",
+  "photos": [
+   "images/south-4-1.webp",
+   "images/south-4-2.webp",
+   "images/south-4-3.webp"
+  ]
+ },
+ {
+  "name": "Bedspace in BF Homes Parañaque",
+  "propertyType": "Boarding House",
+  "city": "Parañaque",
+  "address": "Bb. Ramona Tirona St., B.F. Homes, Parañaque City, near St. Luke's Hospital",
+  "description": "A bedspace in a spacious BF Homes house with large rooms holding bunk beds, stand fans and a window aircon unit. Tenants share a roomy tiled bathroom. It sits in a quiet subdivision near St. Luke's Hospital.",
+  "monthlyRent": 4000,
+  "genderCategory": "Any",
+  "amenities": [
+   "Air Conditioning",
+   "Electric Fan",
+   "Shared Bathroom"
+  ],
+  "houseRules": "",
+  "capacity": 12,
+  "availableSlots": 3,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "genderCategory",
+   "amenities",
+   "houseRules"
+  ],
+  "sourceUrl": "https://www.dorm.ph/listing/71ac250e-59c8-4d68-a8a1-19a0082b799a",
+  "photos": [
+   "images/south-5-1.jpg",
+   "images/south-5-2.jpg",
+   "images/south-5-3.jpg"
+  ]
+ },
+ {
+  "name": "BF Resort Village Bedspace, Las Piñas",
+  "propertyType": "Boarding House",
+  "city": "Las Piñas",
+  "address": "B5 Lot 52 JB Tan Street, BF Resort Village, Talon Dos, Las Piñas City",
+  "description": "An air-conditioned bedspace with WiFi inside the gated BF Resort Village. Rooms are compact with built-in bunk-style beds and wood-panelled finishes. The village is a short ride from SM Southmall and Alabang.",
+  "monthlyRent": 3500,
+  "genderCategory": "Any",
+  "amenities": [
+   "WiFi",
+   "Air Conditioning"
+  ],
+  "houseRules": "",
+  "capacity": 8,
+  "availableSlots": 2,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "genderCategory",
+   "houseRules"
+  ],
+  "sourceUrl": "https://www.suzyrent.com/for-rent/national-capital-region-ncr/bedspace-for-rent-in-laspinas/suzy-111",
+  "photos": [
+   "images/south-6-1.webp",
+   "images/south-6-2.webp",
+   "images/south-6-3.webp"
+  ]
+ },
+ {
+  "name": "Female Bedspace, Narra St, Golden Acres",
+  "propertyType": "Boarding House",
+  "city": "Las Piñas",
+  "address": "Narra St., Golden Acres Subdivision, Talon 5, Las Piñas City, near Marcos Alvarez Ave.",
+  "description": "A women-only bedspace in a Las Piñas subdivision, with one shared bathroom for six residents and an induction cooker for simple meals. Electricity, Maynilad water and WiFi are covered by the rent. SM Southmall, Puregold and Jollibee Molino are one ride away.",
+  "monthlyRent": 3000,
+  "genderCategory": "Female",
+  "amenities": [
+   "WiFi",
+   "Shared Bathroom",
+   "Kitchen Access",
+   "Water Included",
+   "Electricity Included"
+  ],
+  "houseRules": "No pets. No four-wheel parking. 1 month advance and 1 month deposit. Police/NBI and barangay clearance, valid ID and vaccine card required.",
+  "capacity": 12,
+  "availableSlots": 2,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/female-bedspace-for-rent-in-narra-st-las-pinas-3k-near-sm-southmall-and-marcos-alvarez/",
+  "photos": [
+   "images/south-7-1.jpg"
+  ]
+ },
+ {
+  "name": "Dorm Suites Alabang",
+  "propertyType": "Dormitory",
+  "city": "Muntinlupa",
+  "address": "T. Molina St., Molina Rotonda, Alabang, Muntinlupa City",
+  "description": "A rental near the Alabang rotonda aimed at people working or studying around Alabang. The room is fully furnished with its own bathroom. Utilities are billed separately from the monthly rate.",
+  "monthlyRent": 3000,
+  "genderCategory": "Any",
+  "amenities": [
+   "Private Bathroom"
+  ],
+  "houseRules": "Post-dated checks required. Water, electricity and internet billed separately.",
+  "capacity": 10,
+  "availableSlots": 3,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "genderCategory",
+   "amenities"
+  ],
+  "sourceUrl": "https://www.suzyrent.com/for-rent/national-capital-region-ncr/dorm-suites-alabang/suzy-86",
+  "photos": [
+   "images/south-8-1.webp",
+   "images/south-8-2.webp",
+   "images/south-8-3.webp"
+  ]
+ },
+ {
+  "name": "Segundina Townhomes Ladies Bedspace, Putatan",
+  "propertyType": "Boarding House",
+  "city": "Muntinlupa",
+  "address": "Segundina Townhomes, Putatan, Muntinlupa City, near Muntinlupa City Hall and Medical Center",
+  "description": "Ladies' bedspaces in a gated townhouse with round-the-clock security and access to a mini clubhouse and pool. Rooms have two double-deck beds with foam, a fan, vanity mirror and cabinet. A dining set, electric stove, two bathrooms and a covered laundry area are shared. Basic electricity and water are included.",
+  "monthlyRent": 2500,
+  "genderCategory": "Female",
+  "amenities": [
+   "Electric Fan",
+   "Shared Bathroom",
+   "Kitchen Access",
+   "Laundry Area",
+   "Security Guard",
+   "Water Included",
+   "Electricity Included"
+  ],
+  "houseRules": "",
+  "capacity": 8,
+  "availableSlots": 4,
+  "estimatedFields": [
+   "capacity",
+   "houseRules"
+  ],
+  "sourceUrl": "https://moveinthecity.ph/bedspace-for-ladies-in-muntinlupa/",
+  "photos": [
+   "images/south-9-1.jpg",
+   "images/south-9-2.jpg",
+   "images/south-9-3.jpg"
+  ]
+ },
+ {
+  "name": "Lady Bedspace, M.L. Quezon St, Cupang",
+  "propertyType": "Boarding House",
+  "city": "Muntinlupa",
+  "address": "M.L. Quezon Street, Cupang, Muntinlupa City, near Filinvest and Starmall Alabang",
+  "description": "An affordable lady bedspace in Cupang, within reach of Filinvest, Starmall Alabang, Amkor and FEU Alabang. Rooms are in a small compound with a parking area. Good for nearby office and school-going women.",
+  "monthlyRent": 2000,
+  "genderCategory": "Female",
+  "amenities": [
+   "Shared Bathroom",
+   "Parking"
+  ],
+  "houseRules": "",
+  "capacity": 10,
+  "availableSlots": 3,
+  "estimatedFields": [
+   "capacity",
+   "availableSlots",
+   "amenities",
+   "houseRules"
+  ],
+  "sourceUrl": "https://www.dorm.ph/listing/f64ca2e9-99b2-4cf4-b1ca-8356b914295e",
+  "photos": [
+   "images/south-10-1.jpg",
+   "images/south-10-2.jpg",
+   "images/south-10-3.jpg"
+  ]
+ }
+]
