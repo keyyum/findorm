@@ -1,0 +1,256 @@
+[
+  {
+    "name": "Our Home Dormitory",
+    "propertyType": "Dormitory",
+    "city": "Makati",
+    "address": "2023 Ricarte St., Brgy. South Cembo, Makati City (near St. Luke's BGC)",
+    "description": "Bunk-bed dormitory in South Cembo aimed at young professionals working around BGC. Rooms are air-conditioned with lockers, drawers and foam mattresses, and the building has a passenger elevator and a roof deck.",
+    "monthlyRent": 3500,
+    "genderCategory": "Any",
+    "amenities": [
+      "WiFi",
+      "Air Conditioning",
+      "Private Bathroom",
+      "CCTV"
+    ],
+    "houseRules": "1 month advance and 1 month deposit; 2 government IDs required.",
+    "capacity": 40,
+    "availableSlots": 6,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/7f64b71b-f365-4595-95b8-ab4f17d38111",
+    "photos": [
+      "images/metro-1-1.jpg",
+      "images/metro-1-2.jpg",
+      "images/metro-1-3.jpg"
+    ]
+  },
+  {
+    "name": "Milflores Lady Bedspace",
+    "propertyType": "Boarding House",
+    "city": "Makati",
+    "address": "B70 L31 Milflores St., Brgy. Rizal, Makati City, near INC Lokal ng Pembo",
+    "description": "Third-floor bedspace for ladies in Barangay Rizal with a mattress and lockable cabinet for each bed. Residents share a bathroom, kitchen and a rooftop laundry area, and the market and SM Aura are a tricycle ride away.",
+    "monthlyRent": 3300,
+    "genderCategory": "Female",
+    "amenities": [
+      "Shared Bathroom",
+      "Kitchen Access",
+      "Laundry Area",
+      "Water Included",
+      "Electricity Included"
+    ],
+    "houseRules": "1 month advance and 1 month deposit; government ID, company ID and emergency contact required; viewing 11am-5pm daily.",
+    "capacity": 12,
+    "availableSlots": 4,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/4f7bfc56-244b-45b1-abb2-94115684800c",
+    "photos": [
+      "images/metro-2-1.jpg",
+      "images/metro-2-2.jpg",
+      "images/metro-2-3.jpg"
+    ]
+  },
+  {
+    "name": "East Rembo Female Bedspace near BGC",
+    "propertyType": "Boarding House",
+    "city": "Makati",
+    "address": "24th Avenue, East Rembo, Makati City",
+    "description": "Newly built female bedspace in East Rembo, a short ride from BGC, Market Market and McKinley. Each room has its own bathroom with a bidet and beds come with foam, sheets and pillows.",
+    "monthlyRent": 2500,
+    "genderCategory": "Female",
+    "amenities": [
+      "Private Bathroom",
+      "Water Included",
+      "Electricity Included"
+    ],
+    "houseRules": "",
+    "capacity": 8,
+    "availableSlots": 1,
+    "estimatedFields": [
+      "capacity",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/cd9dd6db-a91f-4013-bf3a-2eb1877753d8",
+    "photos": [
+      "images/metro-3-1.jpg",
+      "images/metro-3-2.jpg",
+      "images/metro-3-3.jpg"
+    ]
+  },
+  {
+    "name": "Link Living Filmore",
+    "propertyType": "Dormitory",
+    "city": "Makati",
+    "address": "Filmore St. cor. Casino St., Palanan, Makati City",
+    "description": "Co-living dormitory in Palanan offering plug-and-play furnished rooms with quality furniture and appliances. Built for workers and students who want a contemporary, hassle-free place near major roads and offices.",
+    "monthlyRent": 5000,
+    "genderCategory": "Any",
+    "amenities": [
+      "Air Conditioning",
+      "WiFi",
+      "CCTV"
+    ],
+    "houseRules": "",
+    "capacity": 60,
+    "availableSlots": 10,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory",
+      "amenities",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/a08b93a3-cf9d-4566-9614-7f038612054f",
+    "photos": [
+      "images/metro-4-1.jpg",
+      "images/metro-4-2.jpg",
+      "images/metro-4-3.jpg"
+    ]
+  },
+  {
+    "name": "The Wood Ridge Residences at McKinley",
+    "propertyType": "Dormitory",
+    "city": "Taguig",
+    "address": "Upper McKinley Rd, Pinagsama, Taguig City (McKinley Hill, near Venice Piazza)",
+    "description": "Six-storey mid-rise dormitory split into two clusters, with air-conditioned units furnished with double-deck beds. Ground-floor stalls include a 24-hour convenience store, laundry shop and eateries, serving students and workers around Fort Bonifacio.",
+    "monthlyRent": 3300,
+    "genderCategory": "Any",
+    "amenities": [
+      "Air Conditioning",
+      "Laundry Area"
+    ],
+    "houseRules": "",
+    "capacity": 200,
+    "availableSlots": 20,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/ca220129-37fe-4687-978b-7fa89ec10ccd",
+    "photos": [
+      "images/metro-5-1.jpg",
+      "images/metro-5-2.jpg",
+      "images/metro-5-3.jpg"
+    ]
+  },
+  {
+    "name": "Urbanspace Co-Living Pasig (Bridgetowne)",
+    "propertyType": "Dormitory",
+    "city": "Pasig",
+    "address": "Amang Rodriguez Avenue, Brgy. Rosario, Pasig City, near Bridgetowne and IPI",
+    "description": "Modern co-living building with furnished dorm rooms for young professionals, offered in 2-, 4-, 6- and 8-bed layouts. The 8-bed all-male standard room is the cheapest, and all-female rooms are also available.",
+    "monthlyRent": 2450,
+    "genderCategory": "Any",
+    "amenities": [
+      "Air Conditioning",
+      "WiFi"
+    ],
+    "houseRules": "",
+    "capacity": 100,
+    "availableSlots": 15,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "amenities",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/ca453b0e-e06f-469a-82c7-a5725c647471",
+    "photos": [
+      "images/metro-6-1.jpg",
+      "images/metro-6-2.jpg",
+      "images/metro-6-3.jpg"
+    ]
+  },
+  {
+    "name": "VM Dormitory",
+    "propertyType": "Dormitory",
+    "city": "Mandaluyong",
+    "address": "Brgy. Malamig, Mandaluyong City, near MRT Boni and RTU",
+    "description": "Home-style dormitory for female students and professionals, within reach of RTU, Boni Market and Robinsons Pioneer. It has an in-house canteen and round-the-clock CCTV.",
+    "monthlyRent": 2500,
+    "genderCategory": "Female",
+    "amenities": [
+      "WiFi",
+      "CCTV"
+    ],
+    "houseRules": "",
+    "capacity": 30,
+    "availableSlots": 5,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/9c2764da-f5ae-4f68-8a6f-3f4a48da7745",
+    "photos": [
+      "images/metro-7-1.jpg",
+      "images/metro-7-2.jpg",
+      "images/metro-7-3.jpg"
+    ]
+  },
+  {
+    "name": "CITIHUB Dormitory Mandaluyong Branch",
+    "propertyType": "Dormitory",
+    "city": "Mandaluyong",
+    "address": "J.P. Rizal Street, Mabini-J. Rizal, Mandaluyong City",
+    "description": "Budget dorm built from container vans, with 22 double-deck beds per room. Every bed has its own window, hanging rod, drawer, locker and curtain, and separate container units serve as toilets and showers.",
+    "monthlyRent": 1600,
+    "genderCategory": "Any",
+    "amenities": [
+      "Electric Fan",
+      "Air Conditioning",
+      "Shared Bathroom",
+      "CCTV",
+      "Security Guard"
+    ],
+    "houseRules": "",
+    "capacity": 88,
+    "availableSlots": 10,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/334753e4-3987-47bc-9bff-7314ed28e3ae",
+    "photos": [
+      "images/metro-8-1.jpg",
+      "images/metro-8-2.jpg",
+      "images/metro-8-3.jpg"
+    ]
+  },
+  {
+    "name": "Lead Ladies Dormitory",
+    "propertyType": "Dormitory",
+    "city": "Mandaluyong",
+    "address": "Bulusan Street, Brgy. Mauway, Mandaluyong City, near MRT Boni and Megamall",
+    "description": "Ladies-only dormitory a few minutes on foot from Robinsons Supermarket and banks. MRT Boni and Shaw stations, EDSA, Megamall and Starmall are all within a short walk.",
+    "monthlyRent": 3000,
+    "genderCategory": "Female",
+    "amenities": [],
+    "houseRules": "",
+    "capacity": 24,
+    "availableSlots": 4,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "amenities",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/4e359788-3e8e-4032-a607-41148e02fdba",
+    "photos": [
+      "images/metro-9-1.jpg",
+      "images/metro-9-2.jpg",
+      "images/metro-9-3.jpg"
+    ]
+  }
+]

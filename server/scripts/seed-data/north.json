@@ -1,0 +1,171 @@
+[
+  {
+    "name": "Santiago Boarding House",
+    "propertyType": "Boarding House",
+    "city": "Caloocan",
+    "address": "Sabalo Street, Dagat-Dagatan Avenue, Barangay 12, Caloocan City (near UE Caloocan, STI, AMA and SM Sangandaan)",
+    "description": "A boarding house in the Sangandaan-Dagat-Dagatan area with bunk-style rooms that sleep four, a shared kitchen and a tidy common vanity area. It sits close to UE Caloocan, STI and AMA, with markets and jeeps and buses to Recto and the LRT nearby.",
+    "monthlyRent": 2500,
+    "genderCategory": "Any",
+    "amenities": [
+      "Electric Fan",
+      "Shared Bathroom",
+      "Kitchen Access"
+    ],
+    "houseRules": "",
+    "capacity": 16,
+    "availableSlots": 4,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory",
+      "amenities",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/581a08af-3e06-420e-a443-0d4d55df2748",
+    "photos": [
+      "images/north-1-1.jpg",
+      "images/north-1-2.jpg",
+      "images/north-1-3.jpg"
+    ]
+  },
+  {
+    "name": "Grace Park Female Bedspace near LRT Monumento",
+    "propertyType": "Dormitory",
+    "city": "Caloocan",
+    "address": "Florencia St., 12th Avenue, Grace Park West, Barangay 71, Caloocan City (about 150 m from LRT Monumento)",
+    "description": "A bedspace for women in Grace Park West, roughly a 3-5 minute walk from LRT Monumento. It has a shared kitchen and common areas, and is a handy base for students heading to UE Caloocan or UCC, or for working girls commuting by LRT.",
+    "monthlyRent": 3000,
+    "genderCategory": "Female",
+    "amenities": [
+      "Electric Fan",
+      "Shared Bathroom",
+      "Kitchen Access"
+    ],
+    "houseRules": "",
+    "capacity": 12,
+    "availableSlots": 3,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "amenities",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/9ffed9f3-ee1c-44a6-935a-df9d9ef35326",
+    "photos": [
+      "images/north-2-1.jpg",
+      "images/north-2-2.jpg",
+      "images/north-2-3.jpg"
+    ]
+  },
+  {
+    "name": "Flores Bedspace near Arellano University Malabon",
+    "propertyType": "Dormitory",
+    "city": "Malabon",
+    "address": "Esguerra Street, Flores, Malabon City (near Arellano University Elisa Esguerra Campus)",
+    "description": "Room with built-in bunk beds for four boarders, a short walk from the Arellano University Elisa Esguerra campus in Malabon. It is a simple, budget-friendly setup with a small shared bathroom.",
+    "monthlyRent": 2000,
+    "genderCategory": "Any",
+    "amenities": [
+      "Electric Fan",
+      "Shared Bathroom"
+    ],
+    "houseRules": "",
+    "capacity": 4,
+    "availableSlots": 2,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory",
+      "amenities",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/4047815c-88b7-4a4f-a875-8f6a886054e8",
+    "photos": [
+      "images/north-5-1.jpg",
+      "images/north-5-2.jpg",
+      "images/north-5-4.jpg"
+    ]
+  },
+  {
+    "name": "Longos Bedspace behind Fisher Mall Malabon",
+    "propertyType": "Dormitory",
+    "city": "Malabon",
+    "address": "Salmon Street, Longos, Malabon City (back of Fisher Mall)",
+    "description": "Mixed bedspace in two-level bunk rooms right behind Fisher Mall in Longos, Malabon. Shops, the market and public transport are within a short walk, which suits students of City of Malabon University and workers alike.",
+    "monthlyRent": 3000,
+    "genderCategory": "Any",
+    "amenities": [
+      "Electric Fan",
+      "Shared Bathroom"
+    ],
+    "houseRules": "",
+    "capacity": 12,
+    "availableSlots": 3,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "amenities",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/f613a2a8-6d73-4c0d-b54b-aa1904f6d281",
+    "photos": [
+      "images/north-6-1.jpg",
+      "images/north-6-3.jpg"
+    ]
+  },
+  {
+    "name": "K. Plaza Ladies Dormitory Valenzuela",
+    "propertyType": "Dormitory",
+    "city": "Valenzuela",
+    "address": "Karuhatan, Valenzuela City (near Karuhatan Market, SM Valenzuela and Fatima University)",
+    "description": "A ladies-only dormitory advertised as new, clean and secured, offering both rooms and bedspaces. It is close to Karuhatan Market, SM Valenzuela, supermarkets and Our Lady of Fatima University, and water and electricity are included in the rate.",
+    "monthlyRent": 1650,
+    "genderCategory": "Female",
+    "amenities": [
+      "Water Included",
+      "Electricity Included"
+    ],
+    "houseRules": "",
+    "capacity": 30,
+    "availableSlots": 5,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "amenities",
+      "houseRules",
+      "address"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/k-plaza-ladies-dormitory-valenzuela/",
+    "photos": []
+  },
+  {
+    "name": "Pinalagad Room near SM Valenzuela",
+    "propertyType": "Boarding House",
+    "city": "Valenzuela",
+    "address": "San Francisco, Pinalagad (Mapulang Lupa), Valenzuela City, walking distance to SM Valenzuela",
+    "description": "A rentable room in an apartment-style building in Pinalagad, within walking distance of SM Valenzuela. The loft-style room has its own small kitchen counter and a toilet nearby, suited to a student or worker living on a budget.",
+    "monthlyRent": 3500,
+    "genderCategory": "Any",
+    "amenities": [
+      "Kitchen Access",
+      "Private Bathroom"
+    ],
+    "houseRules": "",
+    "capacity": 2,
+    "availableSlots": 1,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory",
+      "amenities",
+      "houseRules"
+    ],
+    "sourceUrl": "https://www.dorm.ph/listing/fa4c0cdc-4b65-479c-908c-c66a6ad0aa7d",
+    "photos": [
+      "images/north-8-1.jpg",
+      "images/north-8-2.jpg",
+      "images/north-8-3.jpg"
+    ]
+  }
+]

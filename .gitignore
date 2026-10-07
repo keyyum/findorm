@@ -39,5 +39,5 @@ Thumbs.db
 # testing
 coverage/
 
-# scraped demo data (third-party photos and text, local use only, never commit)
-server/scripts/seed-data/
+# demo owner passwords written by npm run seed-dorms
+server/scripts/seed-data/owners.txt

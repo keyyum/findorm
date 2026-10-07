@@ -1,0 +1,228 @@
+[
+  {
+    "name": "Katipunan Condo Dorm at One Burgundy Plaza",
+    "propertyType": "Dormitory",
+    "city": "Quezon City",
+    "address": "7th Floor, One Burgundy Plaza, 307 Katipunan Avenue, Loyola Heights, across Ateneo",
+    "description": "Condo-style bedspaces on the 7th floor of a Katipunan building directly facing Ateneo. Rent is all-in, covering internet, electricity for gadgets and use of the building gym. Within reach of Ateneo, Miriam, UP Diliman and CCA.",
+    "monthlyRent": 4500,
+    "genderCategory": "Any",
+    "amenities": [
+      "WiFi",
+      "Air Conditioning",
+      "Electricity Included"
+    ],
+    "houseRules": "",
+    "capacity": 24,
+    "availableSlots": 4,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/dormitory-boarding-katipunan-ateneo-up-area-p4500/",
+    "photos": [
+      "images/qc-1-2.jpg",
+      "images/qc-1-3.jpg"
+    ]
+  },
+  {
+    "name": "Athena Ladies Dorm",
+    "propertyType": "Dormitory",
+    "city": "Quezon City",
+    "address": "Rosa Alvero St., beside McDonald's Katipunan, Loyola Heights",
+    "description": "A furnished ladies-only dorm a few meters off Katipunan Avenue, close to Ateneo, Miriam and UP Diliman. Every room has its own comfort room and WiFi, with a choice of 4 or 6 sharing; a 2-person room costs more.",
+    "monthlyRent": 4900,
+    "genderCategory": "Female",
+    "amenities": [
+      "WiFi",
+      "Private Bathroom",
+      "Electric Fan"
+    ],
+    "houseRules": "",
+    "capacity": 24,
+    "availableSlots": 3,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "amenities"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/new-dorm-near-ateneo-up-miriam-quezon-city/",
+    "photos": []
+  },
+  {
+    "name": "Female Bedspaces in Loyola Heights",
+    "propertyType": "Boarding House",
+    "city": "Quezon City",
+    "address": "Across Loyola Heights Barangay Hall (Park 9), Loyola Heights, Katipunan",
+    "description": "A women's boarding house in a safe, walkable pocket of Loyola Heights near Miriam, Ateneo, UP Diliman and Cubao. Rooms have private bathrooms, and there is a shared dining and living room downstairs. Visitors are allowed.",
+    "monthlyRent": 3500,
+    "genderCategory": "Female",
+    "amenities": [
+      "Private Bathroom",
+      "Kitchen Access"
+    ],
+    "houseRules": "Visitors allowed",
+    "capacity": 16,
+    "availableSlots": 2,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/female-bedspacers-in-katipunan-quezon-city/",
+    "photos": []
+  },
+  {
+    "name": "Male Bedspace on C. Benitez St., Cubao",
+    "propertyType": "Boarding House",
+    "city": "Quezon City",
+    "address": "C. Benitez St., Cubao, near MRT Cubao and Farmers Plaza",
+    "description": "Budget bedspaces for men a short walk from MRT Cubao, Gateway Mall and SM Cubao. Six sleep to a room, each room has its own comfort room and sink, and CCTV covers every floor. Light cooking is allowed but rice cookers are not.",
+    "monthlyRent": 2000,
+    "genderCategory": "Male",
+    "amenities": [
+      "Electric Fan",
+      "Private Bathroom",
+      "CCTV",
+      "Water Included",
+      "Electricity Included"
+    ],
+    "houseRules": "No curfew; no rice cookers; WiFi is a separate fee per gadget",
+    "capacity": 36,
+    "availableSlots": 5,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/male-bedspace-in-cubao/",
+    "photos": [
+      "images/qc-4-1.jpg",
+      "images/qc-4-2.jpg"
+    ]
+  },
+  {
+    "name": "Male Bedspace near Araneta Center",
+    "propertyType": "Boarding House",
+    "city": "Quezon City",
+    "address": "Near MRT Cubao, Araneta Center, Cubao",
+    "description": "Quiet and secured bedspaces for men next to the MRT, LRT, EDSA and SM Cubao. Double-deck beds with foam and an electric fan, plus a laundry area. Light and water are included in the monthly fee.",
+    "monthlyRent": 2000,
+    "genderCategory": "Male",
+    "amenities": [
+      "Electric Fan",
+      "Laundry Area",
+      "Water Included",
+      "Electricity Included"
+    ],
+    "houseRules": "1 month advance and 1 month deposit",
+    "capacity": 20,
+    "availableSlots": 4,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/male-bedspace-near-araneta-center/",
+    "photos": [
+      "images/qc-5-1.jpg"
+    ]
+  },
+  {
+    "name": "UP Bliss Building Rooms",
+    "propertyType": "Boarding House",
+    "city": "Quezon City",
+    "address": "UP Bliss Building, behind Jollibee Philcoa, Diliman, near Maginhawa and Technohub",
+    "description": "Solo rooms in a building behind Philcoa, walkable to UP Diliman, Technohub, Maginhawa and QC City Hall. The rate includes 100 Mbps WiFi, electricity and water, kitchenware is provided, and cooking and laundry are allowed. Minimum stay of six months.",
+    "monthlyRent": 6000,
+    "genderCategory": "Any",
+    "amenities": [
+      "WiFi",
+      "Kitchen Access",
+      "Laundry Area",
+      "Water Included",
+      "Electricity Included"
+    ],
+    "houseRules": "1 month advance and 1 month deposit; minimum 6-month stay; 2 valid IDs; no big appliances",
+    "capacity": 4,
+    "availableSlots": 4,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots",
+      "genderCategory"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/bedspace-for-rent-in-qc-near-up-diliman-and-technohub-6k/",
+    "photos": [
+      "images/qc-6-1.jpg"
+    ]
+  },
+  {
+    "name": "Flying Lemur Dormitel",
+    "propertyType": "Dormitory",
+    "city": "Quezon City",
+    "address": "Katipunan Avenue, Loyola Heights, next to CCA",
+    "description": "An air-conditioned dormitel on Katipunan Avenue that takes both men and women as bedspacers or transients. WiFi and a refrigerator are provided, and a security deposit is required. Close to Ateneo, Miriam and UP Diliman.",
+    "monthlyRent": 5500,
+    "genderCategory": "Any",
+    "amenities": [
+      "WiFi",
+      "Air Conditioning"
+    ],
+    "houseRules": "Security deposit required",
+    "capacity": 30,
+    "availableSlots": 5,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots"
+    ],
+    "sourceUrl": "https://www.suzyrent.com/listing/dorm-in-qc-katipunan",
+    "photos": [
+      "images/qc-7-1.webp"
+    ]
+  },
+  {
+    "name": "Male Bedspace on Matimtiman St., Teachers Village",
+    "propertyType": "Boarding House",
+    "city": "Quezon City",
+    "address": "84-M Matimtiman St., Teachers Village, Diliman, near Philcoa and Maginhawa",
+    "description": "Six-to-a-room bedspaces for men in Teachers Village, a short ride from UP Diliman, Philcoa and Maginhawa. Rent covers light and water, a bed, fan, refrigerator and a stove with gas. Toilet and bath are shared.",
+    "monthlyRent": 2300,
+    "genderCategory": "Male",
+    "amenities": [
+      "Electric Fan",
+      "Shared Bathroom",
+      "Kitchen Access",
+      "Water Included",
+      "Electricity Included"
+    ],
+    "houseRules": "",
+    "capacity": 18,
+    "availableSlots": 3,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/male-bedspace-teachers-village-diliman-quezon-city/",
+    "photos": []
+  },
+  {
+    "name": "Female Boarding House, 7th Avenue Cubao",
+    "propertyType": "Boarding House",
+    "city": "Quezon City",
+    "address": "87 7th Avenue, Cubao, 4 houses from P. Tuazon, Araneta City",
+    "description": "A newly opened boarding house for women in a peaceful compound three minutes on foot from SM, Ali Mall, Farmers and Gateway. All beds come with foam, and water and electricity are included in the rent.",
+    "monthlyRent": 2800,
+    "genderCategory": "Female",
+    "amenities": [
+      "Water Included",
+      "Electricity Included"
+    ],
+    "houseRules": "",
+    "capacity": 20,
+    "availableSlots": 6,
+    "estimatedFields": [
+      "capacity",
+      "availableSlots"
+    ],
+    "sourceUrl": "https://moveinthecity.ph/boarding-house-for-female/",
+    "photos": []
+  }
+]
