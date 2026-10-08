@@ -21,12 +21,22 @@ export const authenticateToken = async (req, res, next) => {
     return res.status(401).json({ message: "Your session has expired. Please log in again." });
   }
 
-  const user = await User.findById(decoded.id).select("role isActive");
+  const user = await User.findById(decoded.id).select("role isActive passwordChangedAt");
   if (!user) {
     return res.status(401).json({ message: "Please log in." });
   }
   if (!user.isActive) {
     return res.status(401).json({ message: "This account has been deactivated." });
+  }
+
+   // Reject tokens created before the password was changed
+  if (
+    user.passwordChangedAt &&
+    decoded.iat * 1000 < user.passwordChangedAt.getTime()
+  ) {
+    return res.status(401).json({
+      message: "Your password was changed. Please log in again."
+    });
   }
 
   req.user = { id: user._id.toString(), role: user.role };

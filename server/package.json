@@ -1,7 +1,7 @@
 {
   "name": "findorm-server",
   "version": "0.1.0",
-  "description": "FINDorm back end \u2014 Node.js + Express + MongoDB",
+  "description": "FINDorm back end — Node.js + Express + MongoDB",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -18,6 +18,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.7.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.20.1",
     "multer": "^2.4.0"
