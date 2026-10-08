@@ -16,26 +16,59 @@ export const getMe = async (req, res) => {
 
 // PATCH /api/users/me — FR-03. Only these fields can change; role and isActive are ignored.
 export const updateMe = async (req, res) => {
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user.id).select("+password");
 
   if (!user) {
     throw httpError(404, "User not found.");
   }
 
-  const { firstName, lastName, email, phone } = req.body;
-  if (firstName !== undefined) user.firstName = firstName;
-  if (lastName !== undefined) user.lastName = lastName;
-  if (email !== undefined) {
-    const normalized = typeof email === "string" ? email.trim().toLowerCase() : email;
-    if (normalized !== user.email && (await User.exists({ email: normalized }))) {
-      throw httpError(409, "That email is already registered.", { email: "That email is already registered." });
-    }
-    user.email = normalized;
+  const { firstName, lastName, email, phone, currentPassword } = req.body;
+
+  if (firstName !== undefined) {
+    user.firstName = firstName;
   }
-  // An empty phone removes it (it's optional).
-  if (phone !== undefined) user.phone = phone || undefined;
+
+  if (lastName !== undefined) {
+    user.lastName = lastName;
+  }
+
+  if (email !== undefined) {
+    const normalized =
+      typeof email === "string"
+        ? email.trim().toLowerCase()
+        : email;
+
+    // Only require the current password if the email actually changes
+    if (normalized !== user.email) {
+
+      if (!currentPassword) {
+        throw httpError(400, "Enter your current password.");
+      }
+
+      if (!(await bcrypt.compare(currentPassword, user.password))) {
+        throw httpError(401, "Your current password is wrong.");
+      }
+
+      if (await User.exists({ email: normalized })) {
+        throw httpError(
+          409,
+          "That email is already registered.",
+          {
+            email: "That email is already registered."
+          }
+        );
+      }
+
+      user.email = normalized;
+    }
+  }
+
+  if (phone !== undefined) {
+    user.phone = phone || undefined;
+  }
 
   await user.save();
+
   return res.status(200).json(user);
 };
 
@@ -44,8 +77,13 @@ export const updatePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
   const pwError = passwordError(newPassword);
+
   if (pwError) {
-    throw httpError(400, "Please fix the highlighted fields.", { newPassword: pwError });
+    throw httpError(
+      400,
+      "Please fix the highlighted fields.",
+      { newPassword: pwError }
+    );
   }
 
   const user = await User.findById(req.user.id).select("+password");
@@ -59,6 +97,10 @@ export const updatePassword = async (req, res) => {
   }
 
   user.password = await bcrypt.hash(newPassword, 10);
+
+  // Invalidate JWTs created before this moment
+  user.passwordChangedAt = new Date();
+
   await user.save();
 
   return res.status(204).send();

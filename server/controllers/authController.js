@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { httpError } from "../middleware/errorHandler.js";
 
+
 // Token goes back in the response body; the client stores it and sends it as
 // `Authorization: Bearer <token>`. Logout is client-side (D-13), so no cookie.
 const generateToken = (user) =>
