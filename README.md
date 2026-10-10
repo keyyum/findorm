@@ -80,7 +80,7 @@ cd findorm
 cd server
 npm install
 cp .env.example .env    # then fill in MONGO_URI and JWT_SECRET
-npm run dev             # http://localhost:5000
+npm run dev             # http://localhost:5050
 ```
 
 **Front end** (terminal 2):
@@ -93,7 +93,7 @@ npm run dev             # http://localhost:5173
 
 Open http://localhost:5173. The page reports whether it can reach the API — if it says connected, your setup works.
 
-Requests to `/api/...` from the front end are proxied to port 5000 by Vite, so there is no CORS setup to do in development.
+Requests to `/api/...` from the front end are proxied to port 5050 by Vite, so there is no CORS setup to do in development.
 
 **Admin account:** admins can't sign up through the app (D-09). Create one from `server/`:
 
