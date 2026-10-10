@@ -26,7 +26,7 @@ export default function ListingCard({ listing, className = "", style }) {
         {imageUrl && !failed ? (
           <img src={imageUrl} alt={l.name || ""} loading="lazy" data-loaded={loaded} onLoad={() => setLoaded(true)} onError={() => setFailed(true)} className="lift-img h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#7f9cbc]">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-hint">
             <ImageIcon size={32} />
             <span className="text-xs font-medium">No photo yet</span>
           </div>

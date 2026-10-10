@@ -10,6 +10,7 @@
   --color-navy: #243a5a;      /* primary */
   --color-steel: #3f5f85;     /* muted text */
   --color-sky: #6a8fb8;       /* input borders, accents */
+  --color-hint: #56739a;      /* placeholders and hint text: 4.8:1 on white (WCAG AA) */
   --color-sky-300: #9fbcd8;
   --color-line: #d3e3f2;      /* card borders */
   --color-mist: #ddeaf6;
@@ -37,6 +38,7 @@
   html { -webkit-font-smoothing: antialiased; }
   body { @apply bg-page text-ink font-sans; }
   :focus-visible { outline: 2px solid var(--color-navy); outline-offset: 2px; }
+  ::placeholder { color: var(--color-hint); opacity: 1; }
   button:not(:disabled) { cursor: pointer; }
   /* Hover and state colours ease everywhere, not just on <Button>. Table rows stay instant. */
   a, button, input, select, textarea, label {

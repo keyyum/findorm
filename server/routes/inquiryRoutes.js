@@ -6,6 +6,7 @@ import {
   addInquiryMessage,
 } from "../controllers/inquiryController.js";
 import { authenticateToken, requireRole } from "../middleware/auth.js";
+import { messageLimiter } from "../middleware/rateLimit.js";
 
 const router = express.Router();
 
@@ -13,9 +14,10 @@ const router = express.Router();
 // specific thread (its seeker or owner) is checked in the controller.
 router.use(authenticateToken);
 
-router.post("/", requireRole("seeker"), createInquiry);
+// Owners can start a thread too, from one of their reservation requests.
+router.post("/", requireRole("seeker", "owner"), messageLimiter, createInquiry);
 router.get("/", requireRole("seeker", "owner"), getInquiries);
 router.get("/:id", requireRole("seeker", "owner"), getInquiryById);
-router.post("/:id/messages", requireRole("seeker", "owner"), addInquiryMessage);
+router.post("/:id/messages", requireRole("seeker", "owner"), messageLimiter, addInquiryMessage);
 
 export default router;

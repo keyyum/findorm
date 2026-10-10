@@ -30,12 +30,12 @@ const reservationSchema = new mongoose.Schema(
     moveInDate: {
       type: Date,
       validate: {
+        // Today or later, by the date in Manila, not the server's own time zone
+        // (the client sends YYYY-MM-DD, stored as midnight UTC of that date).
         validator: function (value) {
           if (!value) return true;
-          // Ensure moveInDate is today or later
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          return value >= today;
+          const manilaToday = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila" }).format(new Date());
+          return value >= new Date(`${manilaToday}T00:00:00Z`);
         },
         message: "Pick today or a later date.",
       },

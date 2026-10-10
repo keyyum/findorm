@@ -5,8 +5,10 @@ import { httpError } from "../middleware/errorHandler.js";
 
 // Token goes back in the response body; the client stores it and sends it as
 // `Authorization: Bearer <token>`. Logout is client-side (D-13), so no cookie.
-const generateToken = (user) =>
-  jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+// `iatMs` is the issue time in milliseconds: `iat` is whole seconds, too coarse to
+// tell a token from the password change that happened in the same second.
+export const generateToken = (user) =>
+  jwt.sign({ id: user._id, role: user.role, iatMs: Date.now() }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
   });
 
@@ -35,7 +37,7 @@ export const register = async (req, res) => {
   }
 
   if (await User.exists({ email })) {
-    throw httpError(409, "That email is already registered.", { email: "That email is already registered." });
+    throw httpError(409, "That email is already registered.", { email: "That email is already registered." }, "EMAIL_TAKEN");
   }
 
   // Validate everything else before spending time on the hash.
@@ -60,12 +62,12 @@ export const login = async (req, res) => {
 
   // Same message for unknown email and wrong password, so emails can't be probed.
   if (!user || !(await bcrypt.compare(password, user.password))) {
-    throw httpError(401, "Wrong email or password.");
+    throw httpError(401, "Wrong email or password.", undefined, "INVALID_CREDENTIALS");
   }
 
   // Checked after the password so this doesn't reveal which emails exist (D-08).
   if (!user.isActive) {
-    throw httpError(401, "This account has been deactivated.");
+    throw httpError(401, "This account has been deactivated.", undefined, "ACCOUNT_DEACTIVATED");
   }
 
   return res.status(200).json({ token: generateToken(user), user });

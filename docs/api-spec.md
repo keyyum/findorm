@@ -6,7 +6,7 @@ Field rules and value lists are in [data-model.md](data-model.md). Behavior rule
 
 ## Conventions
 
-**Base URL:** `/api` (the Vite dev server proxies it to port 5000). Request and response bodies are JSON, except photo uploads.
+**Base URL:** `/api` (the Vite dev server proxies it to port 5050). Request and response bodies are JSON, except photo uploads.
 
 **Auth:** Send the token as `Authorization: Bearer <token>`. `client/src/lib/api.js` already does this when a token is in `localStorage` under `findorm_token`.
 
@@ -37,10 +37,33 @@ Validation errors (`400`) also list each bad field, so forms can show the messag
 | Status | Meaning |
 |---|---|
 | `400` | Invalid input (NFR-05) |
-| `401` | No token, bad or expired token, or account deactivated. The front end should clear the token and go to login |
+| `401` | No token, bad or expired token, account deactivated, or password changed since the token was issued. The front end should clear the token and go to login. Login itself also uses 401 for wrong credentials |
 | `403` | Logged in, but this role or user isn't allowed (NFR-02) |
 | `404` | Not found — also used when the record exists but belongs to someone else and the caller shouldn't know it exists |
 | `409` | Conflicts with current state: email taken, listing full, duplicate request, request no longer Pending |
+| `429` | Too many attempts (D-15). Wait and try again |
+
+**Error codes.** Errors the front end has to tell apart also carry a stable `code`, so it never matches on the wording of `message`:
+
+```json
+{ "message": "This listing is full.", "code": "LISTING_FULL" }
+```
+
+| Code | Status | When |
+|---|---|---|
+| `INVALID_CREDENTIALS` | 401 | Login with a wrong email or password |
+| `ACCOUNT_DEACTIVATED` | 401 | Login, or any request, by a deactivated account (D-08) |
+| `PASSWORD_CHANGED` | 401 | Token issued before the user's last password change (D-14) |
+| `SESSION_EXPIRED` / `NOT_LOGGED_IN` | 401 | Expired or bad token / no token |
+| `WRONG_PASSWORD` | 400 | `currentPassword` is wrong (also sets `errors.currentPassword`) |
+| `EMAIL_TAKEN` | 409 | Email already registered |
+| `LISTING_FULL` | 409 | Request or accept on a full listing (D-04) |
+| `DUPLICATE_REQUEST` | 409 | Seeker already has a Pending or Accepted request here (D-03) |
+| `NOT_PENDING` | 409 | Request already answered or withdrawn (D-06) |
+| `REQUEST_COOLDOWN` | 409 | Re-request within 24 hours of a rejection (D-18) |
+| `OWNER_INACTIVE` | 409 | Request or inquiry on a deactivated owner's listing (D-16) |
+| `LISTING_HAS_ACCEPTED` | 409 | Owner deletes a listing that has accepted reservations (D-17) |
+| `RATE_LIMITED` | 429 | Too many attempts (D-15) |
 
 **Paged lists** return:
 
@@ -79,7 +102,7 @@ Create a seeker or owner account (FR-01). Logs the user in straight away.
 `role` must be `seeker` or `owner` (D-09). `phone` is optional.
 
 **201** → `{ "token": "...", "user": User }`
-**400** invalid fields or `role: "admin"` · **409** email already registered
+**400** invalid fields or `role: "admin"` · **409** email already registered · **429** too many sign-ups from one network (D-15)
 
 ### `POST /api/auth/login` — Public
 
@@ -88,7 +111,7 @@ Create a seeker or owner account (FR-01). Logs the user in straight away.
 ```
 
 **200** → `{ "token": "...", "user": User }`
-**401** wrong email or password — use the same message for both so attackers can't find which emails exist · **401** account deactivated — message says so
+**401** `INVALID_CREDENTIALS` wrong email or password — use the same message for both so attackers can't find which emails exist · **401** `ACCOUNT_DEACTIVATED` · **429** too many failed logins (D-15)
 
 **Logout** has no endpoint. The front end deletes `findorm_token` (D-13).
 
@@ -100,9 +123,15 @@ Current user. The front end calls this on page load to check a saved token is st
 
 ### `PATCH /api/users/me` — Logged in
 
-Update own details (FR-03). Send only the fields to change: `firstName`, `lastName`, `email`, `phone`. Any other field (like `role` or `isActive`) is ignored.
+Update own details (FR-03). Send only the fields to change: `firstName`, `lastName`, `email`, `phone`. Any other field (like `role` or `isActive`) is ignored. An empty `phone` removes it.
 
-**200** → `User` · **400** · **409** email taken
+Changing `email` also needs `currentPassword` (D-14), since the email is what the user logs in with:
+
+```json
+{ "email": "juan.new@example.com", "currentPassword": "..." }
+```
+
+**200** → `User` · **400** (missing or wrong `currentPassword` → `errors.currentPassword`, code `WRONG_PASSWORD` when wrong) · **409** `EMAIL_TAKEN`
 
 ### `PATCH /api/users/me/password` — Logged in
 
@@ -110,7 +139,9 @@ Update own details (FR-03). Send only the fields to change: `firstName`, `lastNa
 { "currentPassword": "...", "newPassword": "..." }
 ```
 
-**204** no body · **400** new password too short · **401** current password wrong
+Every token issued before the change stops working, so other devices are signed out (D-14). The response carries a fresh token for this device; the front end stores it in place of the old one.
+
+**200** → `{ "token": "..." }` · **400** new password too short, or `currentPassword` missing or wrong (`errors.currentPassword`, code `WRONG_PASSWORD`)
 
 ---
 
@@ -136,6 +167,8 @@ Unknown values (e.g. `city=Cebu`) return **400**, not an empty list, so typos ar
 
 **200** → paged list of `ListingSummary`
 
+Listings whose owner is deactivated are left out (D-16).
+
 ### `GET /api/listings/mine` — Owner
 
 The logged-in owner's own listings, newest first. Includes full listings.
@@ -146,7 +179,7 @@ The logged-in owner's own listings, newest first. Includes full listings.
 
 Full details (FR-10).
 
-**200** → `Listing` · **404**
+**200** → `Listing` · **404** · also `ownerInactive: true` when the owner is deactivated, so the page can explain why requests are closed (D-16)
 
 ### `POST /api/listings` — Owner
 
@@ -192,9 +225,9 @@ Must be 0 to `capacity`.
 
 ### `DELETE /api/listings/:id` — Owner (own) or Admin
 
-Deletes the listing, its reservations, its inquiries, and its photos (D-11).
+Deletes the listing, its reservations, its inquiries, and its photos (D-11). An owner can't delete a listing that has Accepted reservations; an admin can (D-17).
 
-**204** · **404**
+**204** · **404** · **409** `LISTING_HAS_ACCEPTED` (owner only)
 
 ### `POST /api/listings/:id/photos` — Owner (own)
 
@@ -202,9 +235,9 @@ Deletes the listing, its reservations, its inquiries, and its photos (D-11).
 
 **200** → `Listing` · **400** wrong type, too big, or over 10 · **404**
 
-### `DELETE /api/listings/:id/photos/:photoId` — Owner (own)
+### `DELETE /api/listings/:id/photos/:photoId` — Owner (own) or Admin
 
-`photoId` is the photo's `_id` inside the listing. Also deletes it from Cloudinary.
+`photoId` is the photo's `_id` inside the listing. Also deletes it from Cloudinary. Admins use this to remove one photo that breaks the rules without deleting the listing (D-20); only owners can add photos.
 
 **200** → `Listing` · **404**
 
@@ -223,7 +256,7 @@ Request one slot (FR-13, D-03).
 `moveInDate` and `message` are optional.
 
 **201** → `Reservation` (see below)
-**400** · **404** listing not found · **409** listing is full (D-04) · **409** you already have a Pending or Accepted request for this listing
+**400** · **404** listing not found · **409** `LISTING_FULL` (D-04) · **409** `DUPLICATE_REQUEST`: you already have a Pending or Accepted request for this listing · **409** `REQUEST_COOLDOWN`: the owner rejected your request less than 24 hours ago (D-18) · **409** `OWNER_INACTIVE`: the owner is deactivated (D-16)
 
 ### `GET /api/reservations/mine` — Seeker
 
@@ -275,21 +308,29 @@ Withdraw a Pending request (D-05).
 
 ## Inquiries — FR-11, FR-12
 
-### `POST /api/inquiries` — Seeker
+### `POST /api/inquiries` — Seeker or Owner
 
-Ask about a listing (FR-11). If the seeker already has a thread for this listing, the message is added to it instead (D-07).
+Start a conversation (FR-11). There is one thread per seeker and listing; if it already exists, the message is added to it instead (D-07).
+
+A **seeker** asks about a listing:
 
 ```json
 { "listingId": "...", "body": "Is water included in the rent?" }
 ```
 
-**201** new thread / **200** added to existing thread → `Inquiry` · **400** · **404** listing not found
+An **owner** writes first to someone who sent them a reservation request, naming that request (D-19):
+
+```json
+{ "reservationId": "...", "body": "Hi! Can you visit on Saturday?" }
+```
+
+**201** new thread / **200** added to existing thread → `Inquiry` · **400** · **404** listing (or, for an owner, request) not found · **409** `OWNER_INACTIVE` (D-16) · **429** sending too fast (D-15)
 
 ### `GET /api/inquiries` — Seeker or Owner
 
 The user's threads, most recent activity first. A seeker sees threads they started; an owner sees threads about their listings (FR-12). Messages are not included — just the latest one as a preview.
 
-**200** → paged list of `{ _id, listing: { _id, name }, seeker: PublicUser, lastMessage: { body, sender, createdAt }, lastMessageAt }`
+**200** → paged list of `{ _id, listing: { _id, name }, seeker: PublicUser, owner: PublicUser, lastMessage: { body, sender, createdAt }, lastMessageAt }`
 
 ### `GET /api/inquiries/:id` — the thread's seeker or owner
 
@@ -305,7 +346,7 @@ Reply in a thread (FR-12). Either side can post.
 { "body": "Yes, water is included." }
 ```
 
-**201** → `Inquiry` · **400** · **404**
+**201** → `Inquiry` · **400** · **404** · **429** sending too fast (D-15)
 
 **Inquiry object:**
 
@@ -372,14 +413,14 @@ To edit or delete a listing, admins use the normal `PATCH /api/listings/:id` and
 | PATCH | `/api/listings/:id/availability` | Owner (own) | FR-06 |
 | DELETE | `/api/listings/:id` | Owner (own), Admin | FR-04, 17 |
 | POST | `/api/listings/:id/photos` | Owner (own) | FR-05 |
-| DELETE | `/api/listings/:id/photos/:photoId` | Owner (own) | FR-05 |
+| DELETE | `/api/listings/:id/photos/:photoId` | Owner (own), Admin | FR-05, 17 |
 | POST | `/api/reservations` | Seeker | FR-13 |
 | GET | `/api/reservations/mine` | Seeker | FR-15 |
 | GET | `/api/reservations/incoming` | Owner | FR-14 |
 | PATCH | `/api/reservations/:id/accept` | Owner (own) | FR-14, 16 |
 | PATCH | `/api/reservations/:id/reject` | Owner (own) | FR-14 |
 | DELETE | `/api/reservations/:id` | Seeker (own) | FR-15 |
-| POST | `/api/inquiries` | Seeker | FR-11 |
+| POST | `/api/inquiries` | Seeker, Owner (from a request) | FR-11 |
 | GET | `/api/inquiries` | Seeker, Owner | FR-11, 12 |
 | GET | `/api/inquiries/:id` | Thread members | FR-11, 12 |
 | POST | `/api/inquiries/:id/messages` | Thread members | FR-12 |

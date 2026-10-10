@@ -21,7 +21,7 @@ export default function errorHandler(err, req, res, next) {
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern || {})[0];
     if (field === "email") {
-      return res.status(409).json({ message: "That email is already registered.", errors: { email: "That email is already registered." } });
+      return res.status(409).json({ message: "That email is already registered.", code: "EMAIL_TAKEN", errors: { email: "That email is already registered." } });
     }
     return res.status(409).json({ message: "That already exists." });
   }
@@ -34,14 +34,20 @@ export default function errorHandler(err, req, res, next) {
 
   res.status(status).json({
     message: status === 500 ? "Something went wrong." : err.message,
+    ...(err.errorCode && status !== 500 ? { code: err.errorCode } : {}),
     ...(err.errors && status === 400 ? { errors: err.errors } : {}),
   });
 }
 
-/** Create an error the handler above turns into `{ message }` with this status. */
-export function httpError(status, message, errors) {
+/**
+ * Create an error the handler above turns into `{ message, code?, errors? }`.
+ * `code` is a stable, machine-readable name (docs/api-spec.md → Error codes) so
+ * the client never has to match on the wording of `message`.
+ */
+export function httpError(status, message, errors, code) {
   const err = new Error(message);
   err.status = status;
   if (errors) err.errors = errors;
+  if (code) err.errorCode = code;
   return err;
 }

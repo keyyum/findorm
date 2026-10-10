@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { errorMessage } from "../lib/api";
+import { errorCode, errorMessage } from "../lib/api";
 import { EMAIL_RE } from "../lib/constants";
 import { BanIcon, InfoIcon } from "../components/Icons";
 import { Alert, Button, PasswordField, TextField } from "../components/ui";
@@ -37,10 +37,10 @@ export default function Login() {
       const from = location.state?.from;
       navigate(from && from !== "/login" ? from : "/", { replace: true });
     } catch (err) {
-      const msg = err.response?.data?.message || "";
-      if (err.response?.status === 401 && /deactivat/i.test(msg)) setAlert("deactivated");
-      else if (err.response?.status === 401) setAlert("invalid");
-      else setAlert({ message: errorMessage(err) });
+      const code = errorCode(err);
+      if (code === "ACCOUNT_DEACTIVATED") setAlert("deactivated");
+      else if (code === "INVALID_CREDENTIALS" || err.response?.status === 401) setAlert("invalid");
+      else setAlert({ message: errorMessage(err) }); // includes "too many attempts" (429)
       setPassword("");
       setBusy(false);
     }
