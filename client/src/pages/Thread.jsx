@@ -172,7 +172,7 @@ export default function Thread() {
               disabled={!t}
               placeholder="Write a reply…"
               aria-describedby="reply-count"
-              className={`max-h-[164px] min-h-[46px] flex-1 resize-none rounded-xl border bg-white px-4 py-2.5 text-[15px] leading-6 text-ink placeholder:text-[#7f9cbc] ${tooLong ? "border-danger" : "border-sky hover:border-navy"}`}
+              className={`max-h-[164px] min-h-[46px] flex-1 resize-none rounded-xl border bg-white px-4 py-2.5 text-[15px] leading-6 text-ink placeholder:text-hint ${tooLong ? "border-danger" : "border-sky hover:border-navy"}`}
             />
             <Button type="submit" size="lg" className="!h-[46px]" disabled={!canSend} loading={sending}>
               {!sending && <SendIcon size={18} />} {sending ? "Sending" : "Send"}

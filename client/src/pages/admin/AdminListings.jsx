@@ -118,7 +118,7 @@ export default function AdminListings() {
           <span className="relative">
             <SearchIcon size={18} className="absolute top-[11px] left-3" />
             <input type="search" value={drafts.q} onChange={(e) => setDrafts((d) => ({ ...d, q: e.target.value }))} placeholder="Name or address" maxLength={100}
-              className="h-10 w-full rounded-md border border-sky bg-white pr-2.5 pl-[38px] text-sm text-ink placeholder:text-[#7f9cbc] hover:border-navy" />
+              className="h-10 w-full rounded-md border border-sky bg-white pr-2.5 pl-[38px] text-sm text-ink placeholder:text-hint hover:border-navy" />
           </span>
         </label>
         <Select label="City" width={150} value={f.city} onChange={(v) => setParam({ city: v })} options={CITIES} all="All cities" />
@@ -175,7 +175,7 @@ export default function AdminListings() {
                     <tr key={l._id} className="hover:bg-[#f9fbfe]">
                       <td className={`${td} h-[68px] pl-5`}>
                         {l.photo ? <img src={l.photo} alt="" className="h-11 w-[60px] rounded-lg bg-haze object-cover" /> : (
-                          <span aria-label="No photo" className="flex h-11 w-[60px] items-center justify-center rounded-lg bg-haze text-[#7f9cbc]"><ImageIcon /></span>
+                          <span aria-label="No photo" className="flex h-11 w-[60px] items-center justify-center rounded-lg bg-haze text-hint"><ImageIcon /></span>
                         )}
                       </td>
                       <td className={td}><span className="block truncate font-semibold" title={l.name}>{l.name}</span></td>

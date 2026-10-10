@@ -1,5 +1,5 @@
 import { useState } from "react";
-import api, { errorMessage, fieldErrors } from "../lib/api";
+import api, { errorMessage, fieldErrors, setToken } from "../lib/api";
 import { EMAIL_RE, LIMITS, PHONE_RE } from "../lib/constants";
 import { cap, fullName, initials, monthYear } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
@@ -50,6 +50,8 @@ function ProfileCard() {
   const toast = useToast();
   const orig = { firstName: user.firstName || "", lastName: user.lastName || "", email: user.email || "", phone: user.phone || "" };
   const [p, setP] = useState(orig);
+  // Needed only when the email changes (the email is the login name).
+  const [currentPassword, setCurrentPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [alert, setAlert] = useState("");
   const [busy, setBusy] = useState(false);
@@ -57,6 +59,7 @@ function ProfileCard() {
   const changed = {};
   for (const k of FIELDS) if (p[k].trim() !== orig[k]) changed[k] = p[k].trim();
   const dirty = Object.keys(changed).length > 0;
+  const emailChanged = p.email.trim().toLowerCase() !== orig.email.toLowerCase();
 
   const set = (k) => (e) => {
     setP((x) => ({ ...x, [k]: e.target.value }));
@@ -67,20 +70,25 @@ function ProfileCard() {
     e.preventDefault();
     if (!dirty || busy) return;
     const errs = validateProfile(p);
+    if (emailChanged && !currentPassword) errs.currentPassword = "Enter your current password to change your email.";
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setBusy(true);
     setAlert("");
     try {
       // Only the changed fields, never role (FR-03).
-      const { data } = await api.patch("/users/me", changed);
+      const body = emailChanged ? { ...changed, currentPassword } : changed;
+      const { data } = await api.patch("/users/me", body);
       setUser(data);
       setP({ firstName: data.firstName || "", lastName: data.lastName || "", email: data.email || "", phone: data.phone || "" });
+      setCurrentPassword("");
       toast.success("Profile updated");
     } catch (err) {
+      const fe = fieldErrors(err);
       if (err.response?.status === 409) setErrors({ email: "Email already in use" });
+      else if (fe.currentPassword && Object.keys(fe).length === 1) setErrors(fe);
       else {
-        setErrors(fieldErrors(err));
+        setErrors(fe);
         setAlert(errorMessage(err, "Couldn’t save your changes."));
       }
     } finally {
@@ -116,13 +124,18 @@ function ProfileCard() {
           <TextField className="sm:col-span-2" label="Email" type="email" autoComplete="email" value={p.email} onChange={set("email")} error={errors.email} disabled={busy} />
           <TextField className="sm:col-span-2" label="Phone" optional type="tel" inputMode="numeric" autoComplete="tel" maxLength={11} placeholder="09171234567"
             value={p.phone} onChange={set("phone")} error={errors.phone} hint="11 digits, starting with 09." disabled={busy} />
+          {emailChanged && (
+            <PasswordField className="rise sm:col-span-2" label="Current password" autoComplete="current-password" maxLength={72}
+              value={currentPassword} onChange={(e) => { setCurrentPassword(e.target.value); setErrors((x) => ({ ...x, currentPassword: undefined })); }}
+              error={errors.currentPassword} hint="Needed to change the email you log in with." disabled={busy} />
+          )}
         </div>
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-haze px-6 py-4">
         <span aria-live="polite" className="text-[13px] text-steel">{dirty ? "Unsaved changes" : ""}</span>
         <div className="flex items-center gap-2.5">
-          {dirty && <Button variant="ghost" onClick={() => { setP(orig); setErrors({}); setAlert(""); }} disabled={busy}>Discard</Button>}
+          {dirty && <Button variant="ghost" onClick={() => { setP(orig); setCurrentPassword(""); setErrors({}); setAlert(""); }} disabled={busy}>Discard</Button>}
           <Button type="submit" disabled={!dirty} loading={busy}>{busy ? "Saving…" : "Save changes"}</Button>
         </div>
       </div>
@@ -155,13 +168,14 @@ function PasswordCard() {
     if (Object.keys(errs).length) return;
     setBusy(true);
     try {
-      // 401 here means "wrong current password", not "session ended".
-      await api.patch("/users/me/password", { currentPassword: w.currentPassword, newPassword: w.newPassword }, { skipAuthRedirect: true });
+      // The change signs out every other device; this one gets a fresh token.
+      const { data } = await api.patch("/users/me/password", { currentPassword: w.currentPassword, newPassword: w.newPassword });
+      if (data?.token) setToken(data.token);
       setW(empty);
       setFormKey((k) => k + 1); // also resets the show/hide toggles
-      toast.success("Password changed");
+      toast.success("Password changed. Other devices are signed out.");
     } catch (err) {
-      if (err.response?.status === 401) setErrors({ currentPassword: "Current password is incorrect" });
+      if (fieldErrors(err).currentPassword) setErrors({ currentPassword: fieldErrors(err).currentPassword });
       else {
         const fe = fieldErrors(err);
         setErrors(Object.keys(fe).length ? fe : { newPassword: errorMessage(err, "Couldn’t change your password.") });
@@ -176,7 +190,7 @@ function PasswordCard() {
       <div className="flex flex-col gap-5 p-6">
         <div className="flex flex-col gap-1">
           <h2 id="pw-h" className="text-[17px] font-semibold tracking-tight">Change password</h2>
-          <p className="text-sm text-steel">You’ll stay logged in on this device.</p>
+          <p className="text-sm text-steel">You’ll stay logged in here. Other devices will be signed out.</p>
         </div>
         <PasswordField label="Current password" autoComplete="current-password" maxLength={72} value={w.currentPassword} onChange={set("currentPassword")} error={errors.currentPassword} disabled={busy} />
         <PasswordField label="New password" autoComplete="new-password" maxLength={72} value={w.newPassword} onChange={set("newPassword")} error={errors.newPassword} hint="8 to 72 characters." disabled={busy} />
