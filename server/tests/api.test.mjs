@@ -1,18 +1,22 @@
 /**
- * FINDorm API test suite (46 cases from docs/acceptance-criteria.md).
+ * FINDorm API test suite: 46 cases from docs/acceptance-criteria.md, plus
+ * TC-47 to TC-55 for the fixes in findorm-loopholes.md.
  * Sends real HTTP requests to a running server and records each actual result.
  *
  *   1. Start the server on an EMPTY database (it creates test users and listings).
  *   2. ADMIN_EMAIL=admin@findorm.test ADMIN_PASSWORD='AdminPass2026!' npm run create-admin
  *   3. npm run test:api            (optional: node tests/api.test.mjs results.json)
  *
- * Env: API_URL (default http://localhost:5000/api), MONGO_URI (from .env),
+ * TC-55 trips the login rate limit for 15 minutes. To re-run sooner, start the
+ * server with RATE_LIMIT=off (TC-55 then reports Pending).
+ *
+ * Env: API_URL (default http://localhost:5050/api), MONGO_URI (from .env),
  * ADMIN_EMAIL / ADMIN_PASSWORD (defaults above).
  */
 import "dotenv/config";
 import fs from "node:fs";
 import mongoose from "mongoose";
-const BASE = process.env.API_URL || "http://localhost:5000/api";
+const BASE = process.env.API_URL || "http://localhost:5050/api";
 const OUT = process.argv[2];
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@findorm.test";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "AdminPass2026!";
@@ -107,12 +111,15 @@ const cases = [
     return check(r.status === 200 && me.body.firstName === "Juanito" && me.body.phone === "09171234567" && me.body.role === "seeker",
       `${r.status}; firstName = ${me.body?.firstName}, phone = ${me.body?.phone}, role = ${me.body?.role}`);
   }),
-  tc("TC-10", "Accounts", "Change password: wrong current password, then correct one", "Wrong current → 401; correct → 204; old password no longer works", async () => {
+  tc("TC-10", "Accounts", "Change password: wrong current password, then correct one", "Wrong current → 400 on currentPassword; correct → 200 with a fresh token; old password no longer works", async () => {
     const bad = await call("PATCH", "/users/me/password", { token: ctx.seekerA, body: { currentPassword: "nope", newPassword: "NewPass456" } });
     const ok = await call("PATCH", "/users/me/password", { token: ctx.seekerA, body: { currentPassword: pw, newPassword: "NewPass456" } });
+    // The change revokes older tokens (findorm-loopholes #6); carry on with the fresh one.
+    if (ok.body?.token) ctx.seekerA = ok.body.token;
     const old = await call("POST", "/auth/login", { body: { email: "juan@findorm.test", password: pw } });
     const neu = await call("POST", "/auth/login", { body: { email: "juan@findorm.test", password: "NewPass456" } });
-    return check(bad.status === 401 && ok.status === 204 && old.status === 401 && neu.status === 200, `${bad.status} → ${ok.status}; old password ${old.status}, new password ${neu.status}`);
+    return check(bad.status === 400 && bad.body?.errors?.currentPassword && ok.status === 200 && ok.body?.token && old.status === 401 && neu.status === 200,
+      `${bad.status} (${bad.body?.errors?.currentPassword}) → ${ok.status} ${ok.body?.token ? "with token" : "no token"}; old password ${old.status}, new password ${neu.status}`);
   }),
   // ---------- Listings
   tc("TC-11", "Listings", "Owner creates a listing with complete details (FR-04, FR-05)", "201; listing saved with owner set from the token; isFull = false", async () => {
@@ -336,6 +343,100 @@ const cases = [
     await mongoose.disconnect();
     const ok = docs.every((d) => /^\$2[aby]\$10\$/.test(d.password));
     return check(ok, `${docs.length} users; all passwords start with "${docs[0]?.password.slice(0, 7)}…"`);
+  }),
+  // ---------- Hardening (findorm-loopholes.md)
+  tc("TC-47", "Hardening", "Conflicts carry a machine-readable code (loophole #2)", "Duplicate request → DUPLICATE_REQUEST; full listing → LISTING_FULL; wrong login → INVALID_CREDENTIALS", async () => {
+    const l = await call("POST", "/listings", { token: ctx.ownerA, body: listingBody({ name: "Duplicate Test Dorm" }) });
+    await call("POST", "/reservations", { token: ctx.seekerA, body: { listingId: l.body._id } });
+    const dup = await call("POST", "/reservations", { token: ctx.seekerA, body: { listingId: l.body._id } });
+    await call("DELETE", `/listings/${l.body._id}`, { token: ctx.ownerA });
+    const reg = await call("POST", "/auth/register", { body: mkUser("Mara", "Cruz", "seeker", "mara@findorm.test") });
+    ctx.seekerC = reg.body.token;
+    const fullReq = await call("POST", "/reservations", { token: ctx.seekerC, body: { listingId: ctx.listingOneSlot } });
+    const login = await call("POST", "/auth/login", { body: { email: "mara@findorm.test", password: "WrongPass1" } });
+    return check(dup.body?.code === "DUPLICATE_REQUEST" && fullReq.body?.code === "LISTING_FULL" && login.body?.code === "INVALID_CREDENTIALS",
+      `${dup.status} ${dup.body?.code}; ${fullReq.status} ${fullReq.body?.code}; login ${login.status} ${login.body?.code}`);
+  }),
+  tc("TC-48", "Hardening", "Changing email needs the current password (loophole #7)", "No password → 400; wrong → 400 WRONG_PASSWORD; right → 200 and the new email logs in", async () => {
+    const none = await call("PATCH", "/users/me", { token: ctx.seekerC, body: { email: "mara.new@findorm.test" } });
+    const wrong = await call("PATCH", "/users/me", { token: ctx.seekerC, body: { email: "mara.new@findorm.test", currentPassword: "WrongPass1" } });
+    const ok = await call("PATCH", "/users/me", { token: ctx.seekerC, body: { email: "mara.new@findorm.test", currentPassword: pw } });
+    const login = await call("POST", "/auth/login", { body: { email: "mara.new@findorm.test", password: pw } });
+    const nameOnly = await call("PATCH", "/users/me", { token: ctx.seekerC, body: { firstName: "Mariel" } });
+    return check(none.status === 400 && none.body?.errors?.currentPassword && wrong.status === 400 && wrong.body?.code === "WRONG_PASSWORD" && ok.status === 200 && login.status === 200 && nameOnly.status === 200,
+      `none ${none.status}; wrong ${wrong.status} ${wrong.body?.code}; right ${ok.status}; login with new email ${login.status}; name-only change ${nameOnly.status} (no password needed)`);
+  }),
+  tc("TC-49", "Hardening", "Changing the password signs out other devices (loophole #6)", "Other device's token → 401 PASSWORD_CHANGED; returned token keeps working", async () => {
+    const a = await call("POST", "/auth/login", { body: { email: "mara.new@findorm.test", password: pw } });
+    const b = await call("POST", "/auth/login", { body: { email: "mara.new@findorm.test", password: pw } });
+    const ch = await call("PATCH", "/users/me/password", { token: a.body.token, body: { currentPassword: pw, newPassword: "NewPass789" } });
+    const other = await call("GET", "/users/me", { token: b.body.token });
+    const same = await call("GET", "/users/me", { token: a.body.token });
+    const fresh = await call("GET", "/users/me", { token: ch.body?.token });
+    return check(ch.status === 200 && other.status === 401 && other.body?.code === "PASSWORD_CHANGED" && same.status === 401 && fresh.status === 200,
+      `change ${ch.status}; other device ${other.status} ${other.body?.code}; old token here ${same.status}; fresh token ${fresh.status}`);
+  }),
+  tc("TC-50", "Hardening", "Owner can't delete a listing with accepted reservations (loophole #12)", "Owner → 409 LISTING_HAS_ACCEPTED; listing still there", async () => {
+    const r = await call("DELETE", `/listings/${ctx.listingOneSlot}`, { token: ctx.ownerA });
+    const l = await call("GET", `/listings/${ctx.listingOneSlot}`);
+    return check(r.status === 409 && r.body?.code === "LISTING_HAS_ACCEPTED" && l.status === 200, `${r.status} ${r.body?.code}; listing ${l.status}`);
+  }),
+  tc("TC-51", "Hardening", "Seeker must wait 24 hours to re-request after a rejection (loophole #13)", "Request → reject → request again → 409 REQUEST_COOLDOWN", async () => {
+    const l = await call("POST", "/listings", { token: ctx.ownerA, body: listingBody({ name: "Cooldown Test Dorm" }) });
+    const s1 = await call("POST", "/reservations", { token: ctx.seekerA, body: { listingId: l.body._id } });
+    await call("PATCH", `/reservations/${s1.body._id}/reject`, { token: ctx.ownerA });
+    const s2 = await call("POST", "/reservations", { token: ctx.seekerA, body: { listingId: l.body._id } });
+    await call("DELETE", `/listings/${l.body._id}`, { token: ctx.ownerA });
+    return check(s2.status === 409 && s2.body?.code === "REQUEST_COOLDOWN", `${s2.status} ${s2.body?.code}`);
+  }),
+  tc("TC-52", "Hardening", "Deactivated owner's listings are hidden and closed (loophole #11)", "Search hides it; details say ownerInactive; request and inquiry → 409 OWNER_INACTIVE; admin still sees it", async () => {
+    const o = await call("POST", "/auth/register", { body: mkUser("Rico", "Lim", "owner", "rico@findorm.test") });
+    const l = await call("POST", "/listings", { token: o.body.token, body: listingBody({ name: "Hidden Owner Dorm" }) });
+    await call("PATCH", `/admin/users/${o.body.user._id}/status`, { token: ctx.admin, body: { isActive: false } });
+    const search = await call("GET", "/listings?q=Hidden%20Owner");
+    const details = await call("GET", `/listings/${l.body._id}`);
+    const req = await call("POST", "/reservations", { token: ctx.seekerA, body: { listingId: l.body._id } });
+    const inq = await call("POST", "/inquiries", { token: ctx.seekerA, body: { listingId: l.body._id, body: "Is this still open?" } });
+    const adminList = await call("GET", "/admin/listings?q=Hidden%20Owner", { token: ctx.admin });
+    await call("PATCH", `/admin/users/${o.body.user._id}/status`, { token: ctx.admin, body: { isActive: true } });
+    const back = await call("GET", "/listings?q=Hidden%20Owner");
+    return check(search.body.total === 0 && details.body.ownerInactive === true && req.body?.code === "OWNER_INACTIVE" && inq.body?.code === "OWNER_INACTIVE" && adminList.body.total === 1 && back.body.total === 1,
+      `search ${search.body?.total}; ownerInactive ${details.body?.ownerInactive}; request ${req.status} ${req.body?.code}; inquiry ${inq.status} ${inq.body?.code}; admin sees ${adminList.body?.total}; after reactivation ${back.body?.total}`);
+  }),
+  tc("TC-53", "Hardening", "Admin removes one photo; seeker can't (loophole #14)", "Admin → 200, photo gone; seeker → 403", async () => {
+    const l = await call("POST", "/listings", { token: ctx.ownerA, body: listingBody({ name: "Photo Moderation Dorm" }) });
+    await mongoose.connect(process.env.MONGO_URI);
+    const photoId = new mongoose.Types.ObjectId();
+    await mongoose.connection.db.collection("listings").updateOne(
+      { _id: new mongoose.Types.ObjectId(l.body._id) },
+      { $push: { photos: { _id: photoId, url: "/api/seed-images/test.jpg", publicId: "local/test.jpg" } } }
+    );
+    await mongoose.disconnect();
+    const seeker = await call("DELETE", `/listings/${l.body._id}/photos/${photoId}`, { token: ctx.seekerA });
+    const admin = await call("DELETE", `/listings/${l.body._id}/photos/${photoId}`, { token: ctx.admin });
+    await call("DELETE", `/listings/${l.body._id}`, { token: ctx.ownerA });
+    return check(seeker.status === 403 && admin.status === 200 && admin.body.photos?.length === 0, `seeker ${seeker.status}; admin ${admin.status}; photos left ${admin.body?.photos?.length}`);
+  }),
+  tc("TC-54", "Hardening", "Owner messages a seeker first from their request (loophole #5)", "Owner → 201 thread with that seeker; seeker sees it and can reply; another owner → 404", async () => {
+    const l = await call("POST", "/listings", { token: ctx.ownerA, body: listingBody({ name: "Owner First Dorm" }) });
+    const s = await call("POST", "/reservations", { token: ctx.seekerA, body: { listingId: l.body._id } });
+    const t = await call("POST", "/inquiries", { token: ctx.ownerA, body: { reservationId: s.body._id, body: "Hi! Can you visit on Saturday?" } });
+    const inbox = await call("GET", "/inquiries", { token: ctx.seekerA });
+    const reply = await call("POST", `/inquiries/${t.body?._id}/messages`, { token: ctx.seekerA, body: { body: "Yes, 10 AM works." } });
+    const other = await call("POST", "/inquiries", { token: ctx.ownerB, body: { reservationId: s.body._id, body: "Hello" } });
+    await call("DELETE", `/listings/${l.body._id}`, { token: ctx.ownerA });
+    return check(t.status === 201 && inbox.body.items.some((x) => x._id === t.body._id) && reply.status === 201 && other.status === 404,
+      `owner ${t.status}; in seeker's inbox ${inbox.body?.items?.some((x) => x._id === t.body?._id)}; reply ${reply.status}; other owner ${other.status}`);
+  }),
+  // Last on purpose: it trips the login limit for this machine for 15 minutes.
+  tc("TC-55", "Hardening", "Repeated failed logins are rate limited (loophole #8)", "After the limit → 429 RATE_LIMITED", async () => {
+    let hit = null;
+    for (let i = 0; i < 15 && !hit; i++) {
+      const r = await call("POST", "/auth/login", { body: { email: "nobody@findorm.test", password: "WrongPass1" } });
+      if (r.status === 429) hit = r;
+    }
+    if (!hit) return { actual: "No 429 after 15 failed logins. Rate limiting is off on this server (RATE_LIMIT=off) or LOGIN_RATE_LIMIT is above 15", status: "Pending" };
+    return check(hit.body?.code === "RATE_LIMITED", `429 ${hit.body?.code}: "${hit.body?.message}"`);
   }),
 ];
 
