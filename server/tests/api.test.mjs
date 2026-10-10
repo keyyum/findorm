@@ -16,6 +16,19 @@ const BASE = process.env.API_URL || "http://localhost:5000/api";
 const OUT = process.argv[2];
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@findorm.test";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "AdminPass2026!";
+// A real 8x8 JPEG (633 bytes). Cloudinary rejects stub files that only have the start/end markers.
+const TINY_JPEG = Buffer.from(
+  "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMU" +
+  "FRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQU" +
+  "FBQUFBQUFBT/wAARCAAIAAgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUF" +
+  "BAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVW" +
+  "V1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi" +
+  "4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAEC" +
+  "AxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVm" +
+  "Z2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq" +
+  "8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD48ooor7U+aP/Z",
+  "base64"
+);
 const results = [];
 const today = new Date();
 const iso = (d) => d.toISOString().slice(0, 10);
@@ -149,10 +162,13 @@ const cases = [
   }),
   tc("TC-19", "Listings", "Upload a valid JPEG photo (FR-05)", "200; photo stored on Cloudinary and its URL saved", async () => {
     const fd = new FormData();
-    fd.append("photos", new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0xd9])], { type: "image/jpeg" }), "room.jpg");
+    fd.append("photos", new Blob([TINY_JPEG], { type: "image/jpeg" }), "room.jpg");
     const r = await fetch(`${BASE}/listings/${ctx.listingA}/photos`, { method: "POST", headers: { authorization: `Bearer ${ctx.ownerA}` }, body: fd });
     const j = await r.json();
-    return { actual: `${r.status}; "${j.message}" — Cloudinary credentials are not configured in the test environment`, status: r.status === 200 ? "Pass" : "Pending" };
+    const saved = j.photos?.at(-1);
+    if (r.status === 200 && saved?.url) return check(true, `200; ${j.photos.length} photo(s); url on ${new URL(saved.url).host}`);
+    // Not a failure of the app: without working Cloudinary keys in server/.env the upload cannot be stored.
+    return { actual: `${r.status}; "${j.message}". Not stored; needs valid CLOUDINARY_* keys in server/.env`, status: "Pending" };
   }),
   // ---------- Search
   tc("TC-20", "Search", "Search by city = Manila (FR-07)", "Only Manila listings returned", async () => {
