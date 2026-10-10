@@ -2,6 +2,7 @@ import { v2 as cloudinary } from "cloudinary";
 import Listing from "../models/Listing.js";
 import Reservation from "../models/Reservation.js";
 import Inquiry from "../models/Inquiry.js";
+import User from "../models/User.js";
 import { httpError } from "../middleware/errorHandler.js";
 import { paging, pagedResponse } from "../utils/paging.js";
 import { CITIES, GENDER_CATEGORIES, MAX_PHOTOS, PROPERTY_TYPES } from "../config/constants.js";
@@ -56,6 +57,17 @@ const GENDER_FILTER = {
   Female: ["Female", "Any"],
   Any: ["Any"],
 };
+
+/**
+ * Owners an admin has deactivated (D-08). Their listings are kept but hidden
+ * from search, and new requests and inquiries are refused (findorm-loopholes #11).
+ */
+export const inactiveOwnerIds = () => User.find({ role: "owner", isActive: false }).distinct("_id");
+
+/** True if this listing's owner is deactivated. */
+export async function ownerIsInactive(ownerId) {
+  return Boolean(await User.exists({ _id: ownerId, isActive: false }));
+}
 
 /**
  * Loads a listing the caller may manage. Someone else's listing is reported as
@@ -122,6 +134,8 @@ export function listingSearch(reqQuery) {
 // GET /api/listings — FR-07, FR-08, FR-09 (public)
 export const getListings = async (req, res) => {
   const { query, sort } = listingSearch(req.query);
+  const hidden = await inactiveOwnerIds();
+  if (hidden.length) query.owner = { $nin: hidden };
 
   const pg = paging(req.query);
   const [listings, total] = await Promise.all([
@@ -148,13 +162,18 @@ export const getMyListings = async (req, res) => {
 // GET /api/listings/:id — FR-10 (public)
 export const getListingById = async (req, res) => {
   // Owner is shown as a PublicUser: name only, never email or phone (NFR-04).
-  const listing = await Listing.findById(req.params.id).populate("owner", "firstName lastName");
+  const listing = await Listing.findById(req.params.id).populate("owner", "firstName lastName isActive");
 
   if (!listing) {
     throw httpError(404, "Listing not found.");
   }
 
-  return res.status(200).json(listing);
+  // `ownerInactive` lets the page explain why requests are closed; the owner's
+  // own isActive flag isn't part of PublicUser, so it's taken out.
+  const json = listing.toJSON();
+  const ownerInactive = json.owner?.isActive === false;
+  if (json.owner) delete json.owner.isActive;
+  return res.status(200).json({ ...json, ownerInactive });
 };
 
 // PATCH /api/listings/:id — FR-04, FR-17 (owner of this listing, or admin)
@@ -196,6 +215,17 @@ export const updateListingAvailability = async (req, res) => {
 // DELETE /api/listings/:id — FR-04, FR-17 (owner of this listing, or admin)
 export const deleteListing = async (req, res) => {
   const listing = await findManageable(req, { allowAdmin: true });
+
+  // An owner can't wipe accepted reservations (and the seeker's proof) by
+  // deleting the listing (findorm-loopholes #12). Admins still can, to moderate.
+  if (req.user.role !== "admin" && (await Reservation.exists({ listing: listing._id, status: "Accepted" }))) {
+    throw httpError(
+      409,
+      "This listing has accepted reservations, so it can't be deleted. Set its available slots to 0 to stop new requests.",
+      undefined,
+      "LISTING_HAS_ACCEPTED"
+    );
+  }
 
   // Delete the data first (D-11). Photos are cleaned up afterwards, so a
   // Cloudinary hiccup can never leave a listing whose photos are gone.
@@ -244,9 +274,10 @@ export const addListingPhotos = async (req, res) => {
   return res.status(200).json(listing);
 };
 
-// DELETE /api/listings/:id/photos/:photoId — FR-05 (owner of this listing)
+// DELETE /api/listings/:id/photos/:photoId — FR-05 (owner of this listing), FR-17 (admin)
+// Admins can remove a single inappropriate photo instead of the whole listing (findorm-loopholes #14).
 export const deleteListingPhoto = async (req, res) => {
-  const listing = await findManageable(req, { allowAdmin: false });
+  const listing = await findManageable(req, { allowAdmin: true });
 
   const photo = listing.photos.id(req.params.photoId);
   if (!photo) {
