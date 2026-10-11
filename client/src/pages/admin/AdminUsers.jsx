@@ -93,7 +93,7 @@ export default function AdminUsers() {
           <span className="relative">
             <SearchIcon size={18} className="absolute top-[11px] left-3" />
             <input type="search" value={qDraft} onChange={(e) => setQDraft(e.target.value)} placeholder="Search name or email" maxLength={100}
-              className="h-10 w-full rounded-md border border-sky bg-white pr-3 pl-10 text-sm text-ink placeholder:text-[#7f9cbc] hover:border-navy" />
+              className="h-10 w-full rounded-md border border-sky bg-white pr-3 pl-10 text-sm text-ink placeholder:text-hint hover:border-navy" />
           </span>
         </label>
         <SelectField label="Role" className="w-[170px] [&_label]:text-xs [&_label]:text-steel" selectClassName="!h-10 !text-sm" value={role} onChange={(e) => setParam({ role: e.target.value })}
@@ -151,7 +151,7 @@ export default function AdminUsers() {
                         <td className={`${td} text-steel tabular-nums ${dim}`}>{shortDate(u.createdAt)}</td>
                         <td className={`${td} pr-5 text-right`}>
                           {admin ? (
-                            <span title="Admin accounts can’t be deactivated" aria-label="Admin accounts can’t be deactivated" tabIndex={0} className="inline-flex h-[34px] w-[34px] cursor-help items-center justify-center rounded-lg text-[#7f9cbc]">
+                            <span title="Admin accounts can’t be deactivated" aria-label="Admin accounts can’t be deactivated" tabIndex={0} className="inline-flex h-[34px] w-[34px] cursor-help items-center justify-center rounded-lg text-hint">
                               <LockIcon size={18} />
                             </span>
                           ) : u.isActive ? (

@@ -26,14 +26,17 @@ Each item is written so it can be tested by clicking through the app or sending 
 - [ ] After logging in, refreshing the page keeps the user logged in.
 - [ ] After logging out, refreshing the page shows the user as logged out, and pages that need an account send them to login.
 - [ ] A deactivated user cannot log in and sees a message saying the account is deactivated (D-08).
+- [ ] After 10 failed logins from one network in 15 minutes, further attempts are refused with a "try again later" message; successful logins never count (D-15).
 
 ### FR-03 · View and update account
 
 - [ ] A logged-in user can see their name, email, phone, and role.
 - [ ] They can change their name and phone, and the change is still there after logging out and back in.
 - [ ] Changing email to one another account uses is rejected.
+- [ ] Changing the email asks for the current password; without it, or with a wrong one, the change is refused (D-14).
 - [ ] They can change their password by entering the current one; the old password stops working.
-- [ ] A wrong current password is rejected.
+- [ ] After a password change they stay logged in on that device, and every other device is signed out on its next request (D-14).
+- [ ] A wrong current password is rejected without logging the user out.
 - [ ] The role cannot be changed — sending `role` in the update has no effect.
 
 ---
@@ -46,6 +49,7 @@ Each item is written so it can be tested by clicking through the app or sending 
 - [ ] An owner can edit their own listing and the change appears on the details page.
 - [ ] An owner can delete their own listing after confirming; it disappears from search and its details page returns not found.
 - [ ] Deleting a listing also removes its reservation requests from the seeker's list and its inquiry threads (D-11).
+- [ ] An owner cannot delete a listing that has accepted reservations, and is told to set available slots to 0 instead (D-17).
 - [ ] Owner B cannot edit or delete Owner A's listing (API returns 404).
 - [ ] A seeker cannot create, edit, or delete listings (API returns 403).
 
@@ -122,6 +126,7 @@ Set up a few listings in different cities, prices, types, and gender categories 
 - [ ] The seeker can reply back; the conversation shows in order with who sent each message.
 - [ ] Owner B cannot see or reply to threads about Owner A's listings (404).
 - [ ] Seeker B cannot see Seeker A's threads (404).
+- [ ] An owner can message a seeker first from one of their reservation requests; it opens the same thread the seeker sees (D-19).
 
 ---
 
@@ -131,7 +136,7 @@ Set up a few listings in different cities, prices, types, and gender categories 
 
 - [ ] A seeker can request a slot on a listing that has slots, and it shows as Pending.
 - [ ] Sending a second request for the same listing while the first is Pending or Accepted is refused (D-03).
-- [ ] After a request is Rejected, the seeker can request the same listing again.
+- [ ] After a request is Rejected, the seeker can request the same listing again once 24 hours have passed; before that they are told when they can ask again (D-18).
 - [ ] Requesting a full listing is refused, and the button/form makes that clear (D-04).
 - [ ] A move-in date in the past is rejected.
 - [ ] Owners and admins cannot submit requests.
@@ -172,6 +177,8 @@ Set up a few listings in different cities, prices, types, and gender categories 
 - [ ] The admin can reactivate them, and they can log in again.
 - [ ] The admin cannot deactivate an admin account, including their own.
 - [ ] The admin can see all listings, and edit or delete any of them.
+- [ ] The admin can remove a single photo from any listing without deleting it, but cannot add photos (D-20).
+- [ ] A deactivated owner's listings disappear from search, their details page says requests are closed, and new requests and inquiries are refused; reactivating the owner brings them back (D-16).
 - [ ] Seekers and owners get 403 on every `/api/admin/...` endpoint.
 
 ---

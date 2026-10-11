@@ -22,7 +22,13 @@ if (!process.env.JWT_SECRET) {
 }
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
+
+// Behind a proxy or host (Render, Heroku, nginx), every request would look like
+// it comes from the proxy's IP and the IP-based rate limits would lock everyone
+// out together. Set TRUST_PROXY to the number of proxies in front (usually 1).
+const trustProxy = Number(process.env.TRUST_PROXY);
+if (Number.isInteger(trustProxy) && trustProxy > 0) app.set("trust proxy", trustProxy);
 
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());

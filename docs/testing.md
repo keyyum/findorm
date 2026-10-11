@@ -2,7 +2,7 @@
 
 ## Automated API tests
 
-`server/tests/api.test.mjs` runs the 46 test cases from the project documentation (Section 12.2) against a running server. It sends real requests and prints each actual result.
+`server/tests/api.test.mjs` runs the 46 test cases from the project documentation (Section 12.2), plus TC-47 to TC-55 for the fixes in D-14 to D-20, against a running server. It sends real requests and prints each actual result.
 
 1. Point `MONGO_URI` in `server/.env` at an **empty** database (the tests create their own users and listings).
 2. Start the server: `npm run dev`
@@ -14,10 +14,11 @@
 
 Use the same `ADMIN_EMAIL` / `ADMIN_PASSWORD` for both commands if you change them. The run exits with an error if any case fails.
 
-Last run (2 Oct 2026, local MongoDB-compatible database): 43 Pass, 0 Fail, 3 Pending. Re-run on MongoDB Atlas to settle the pending ones:
+The server listens on port 5050 by default (the Vite proxy expects it). Point the tests elsewhere with `API_URL`, e.g. `API_URL=http://localhost:5070/api`. Avoid ports 5060 and 5061: Node's `fetch` refuses to connect to them.
 
-- **Photo upload:** needs Cloudinary keys in `.env`.
-- **Inbox list and simultaneous accepts:** need real MongoDB.
+**Rate limits.** TC-55 makes repeated failed logins until it gets 429, which blocks logins from your machine for 15 minutes. To run the suite again within that time, start the server with `RATE_LIMIT=off` (TC-55 then reports Pending).
+
+Last run (10 Oct 2026, local MongoDB 8.3 with Cloudinary keys): 55 Pass, 0 Fail, 0 Pending. Without Cloudinary keys, TC-19 (photo upload) reports Pending.
 
 ## Demo data
 

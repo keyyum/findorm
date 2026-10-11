@@ -32,7 +32,7 @@ router.patch("/:id", authenticateToken, requireRole("owner", "admin"), updateLis
 router.patch("/:id/availability", authenticateToken, requireRole("owner"), updateListingAvailability);
 
 // DELETE routes
-router.delete("/:id/photos/:photoId", authenticateToken, requireRole("owner"), deleteListingPhoto);
+router.delete("/:id/photos/:photoId", authenticateToken, requireRole("owner", "admin"), deleteListingPhoto);
 router.delete("/:id", authenticateToken, requireRole("owner", "admin"), deleteListing);
 
 export default router;

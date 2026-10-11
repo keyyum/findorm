@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api, { errorMessage } from "../lib/api";
+import api, { errorCode, errorMessage } from "../lib/api";
 import { peso } from "../lib/format";
 import { useToast } from "../context/ToastContext";
 import { Page } from "../components/Layout";
@@ -45,6 +45,7 @@ export default function MyListings() {
     } catch (err) {
       toast.error(errorMessage(err, "Couldn’t delete the listing."));
       if (err.response?.status === 404) { setConfirm(null); load(); }
+      else if (errorCode(err) === "LISTING_HAS_ACCEPTED") setConfirm(null);
     } finally {
       setDeleting(false);
     }
@@ -115,7 +116,7 @@ function ListingRow({ l, onUpdated, onDelete, stagger }) {
   return (
     <li style={stagger.style} className={`${stagger.className} flex items-center gap-5 rounded-[14px] border border-line bg-white p-4 max-md:grid max-md:grid-cols-[80px_1fr] max-md:items-start max-md:gap-x-3 max-md:gap-y-3`}>
       <div className="h-[72px] w-24 shrink-0 max-md:h-16 max-md:w-20 overflow-hidden rounded-lg bg-haze">
-        {l.photo ? <img src={l.photo} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-[#7f9cbc]"><ImageIcon /></div>}
+        {l.photo ? <img src={l.photo} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-hint"><ImageIcon /></div>}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-2">

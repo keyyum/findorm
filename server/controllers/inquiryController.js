@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import Inquiry from "../models/Inquiry.js";
 import Listing from "../models/Listing.js";
+import Reservation from "../models/Reservation.js";
 import { httpError } from "../middleware/errorHandler.js";
 import { paging, pagedResponse } from "../utils/paging.js";
+import { ownerIsInactive } from "./listingController.js";
 
 // Inquiry object from docs/api-spec.md: people as PublicUser (NFR-04).
 const POPULATE = [
@@ -36,21 +38,46 @@ function pushMessage(filter, sender, body) {
   ).populate(POPULATE);
 }
 
-// POST /api/inquiries — FR-11 (seeker only, enforced in the route)
-export const createInquiry = async (req, res) => {
+/**
+ * Which thread a new inquiry belongs to. A seeker names a listing; an owner
+ * names a reservation request for one of their listings, so they can message
+ * that seeker first (findorm-loopholes #5). Same one-thread-per-pair rule (D-07).
+ */
+async function threadFor(req) {
+  if (req.user.role === "owner") {
+    const { reservationId } = req.body;
+    if (!reservationId || !mongoose.isValidObjectId(reservationId)) {
+      throw httpError(400, "Please fix the highlighted fields.", { reservationId: "Choose a request to reply to." });
+    }
+    const reservation = await Reservation.findOne({ _id: reservationId, owner: req.user.id }).select("listing seeker");
+    if (!reservation) {
+      throw httpError(404, "Request not found.");
+    }
+    return { listing: reservation.listing, seeker: reservation.seeker, owner: req.user.id };
+  }
+
   const { listingId } = req.body;
   if (!listingId || !mongoose.isValidObjectId(listingId)) {
     throw httpError(400, "Please fix the highlighted fields.", { listingId: "Choose a listing." });
   }
-  const body = messageBody(req.body.body);
-
   const listing = await Listing.findById(listingId).select("owner");
   if (!listing) {
     throw httpError(404, "Listing not found.");
   }
+  // findorm-loopholes #11: a deactivated owner can't answer.
+  if (await ownerIsInactive(listing.owner)) {
+    throw httpError(409, "This owner isn't taking messages right now.", undefined, "OWNER_INACTIVE");
+  }
+  return { listing: listing._id, seeker: req.user.id, owner: listing.owner };
+}
+
+// POST /api/inquiries — FR-11 (a seeker about a listing, or an owner about a request)
+export const createInquiry = async (req, res) => {
+  const { listing, seeker, owner } = await threadFor(req);
+  const body = messageBody(req.body.body);
 
   // D-07: one thread per seeker–listing pair. Asking again adds to it.
-  const thread = { listing: listing._id, seeker: req.user.id };
+  const thread = { listing, seeker };
   const existing = await pushMessage(thread, req.user.id, body);
   if (existing) {
     return res.status(200).json(existing);
@@ -60,7 +87,7 @@ export const createInquiry = async (req, res) => {
     const now = new Date();
     const inquiry = await Inquiry.create({
       ...thread,
-      owner: listing.owner,
+      owner,
       messages: [{ sender: req.user.id, body, createdAt: now }],
       lastMessageAt: now,
     });
@@ -89,8 +116,7 @@ export const getInquiries = async (req, res) => {
     Inquiry.countDocuments(query),
   ]);
 
-  // `owner` isn't in the spec's list shape yet; it lets a seeker's inbox show
-  // who they're talking to (issue #21, item 1). The client already uses it.
+  // `owner` lets a seeker's inbox show who they're talking to (findorm-loopholes #1).
   const items = threads.map((t) => {
     const last = t.messages[0];
     return {

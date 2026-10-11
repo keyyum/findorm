@@ -9,7 +9,7 @@ export default defineConfig({
     // Lets the front end call the API as "/api/..." with no CORS juggling.
     proxy: {
       "/api": {
-        target: "http://localhost:5000",
+        target: "http://localhost:5050",
         changeOrigin: true,
       },
     },

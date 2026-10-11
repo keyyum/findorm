@@ -6,7 +6,7 @@
  *
  *   npm run seed-demo
  */
-const B = process.env.API_URL || "http://localhost:5000/api";
+const B = process.env.API_URL || "http://localhost:5050/api";
 const j = async (m, p, t, b) => {
   const r = await fetch(B + p, { method: m, headers: { "content-type": "application/json", ...(t ? { authorization: "Bearer " + t } : {}) }, body: b && JSON.stringify(b) });
   const x = r.status === 204 ? null : await r.json();

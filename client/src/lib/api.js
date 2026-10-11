@@ -35,9 +35,9 @@ api.interceptors.request.use((config) => {
  * Global 401 handler (api-spec → "Errors"): the token is missing, expired, or
  * the account was deactivated (D-08). Clear it and send the user to login.
  *
- * Some calls use 401 to mean something else and opt out with
- * `{ skipAuthRedirect: true }`: logging in (wrong password) and changing the
- * password (wrong current password).
+ * Logging in opts out with `{ skipAuthRedirect: true }`, since a wrong
+ * password there is a 401 too. Everywhere else a wrong current password is a
+ * 400 with a field error, so a 401 always means the session is over.
  */
 let onSessionEnded = () => {
   window.location.assign("/login?reason=session");
@@ -63,6 +63,14 @@ api.interceptors.response.use(
 export function errorMessage(error, fallback = "Something went wrong. Try again.") {
   if (!error?.response) return "Can’t reach FINDorm right now. Check your connection and try again.";
   return error.response.data?.message || fallback;
+}
+
+/**
+ * The machine-readable `code` from an API error (docs/api-spec.md → Error
+ * codes), e.g. "LISTING_FULL". Use this instead of matching on `message`.
+ */
+export function errorCode(error) {
+  return error?.response?.data?.code || "";
 }
 
 /** The per-field `errors` object from a 400 response, or {}. */

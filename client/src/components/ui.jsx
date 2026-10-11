@@ -56,7 +56,7 @@ export function FieldError({ id, children }) {
 }
 
 const inputCls = (bad) =>
-  `h-[42px] w-full rounded-md border bg-white px-3 text-[15px] text-ink transition-colors placeholder:text-[#7f9cbc] disabled:bg-page ${
+  `h-[42px] w-full rounded-md border bg-white px-3 text-[15px] text-ink transition-colors placeholder:text-hint disabled:bg-page ${
     bad ? "border-danger" : "border-sky hover:border-navy"
   }`;
 
@@ -155,7 +155,7 @@ export function TextArea({ label, error, hint, optional, maxLength, value = "", 
         value={value}
         aria-invalid={!!error}
         aria-describedby={error || hint ? msg : undefined}
-        className={`w-full resize-y rounded-md border bg-white px-3 py-2.5 text-[15px] leading-relaxed text-ink transition-colors placeholder:text-[#7f9cbc] ${error ? "border-danger" : "border-sky hover:border-navy"}`}
+        className={`w-full resize-y rounded-md border bg-white px-3 py-2.5 text-[15px] leading-relaxed text-ink transition-colors placeholder:text-hint ${error ? "border-danger" : "border-sky hover:border-navy"}`}
         {...rest}
       />
       {error ? <FieldError id={msg}>{error}</FieldError> : hint ? <span id={msg} className="text-[13px] text-steel">{hint}</span> : null}

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import api, { errorMessage, fieldErrors } from "../lib/api";
+import api, { errorCode, errorMessage, fieldErrors } from "../lib/api";
 import { LIMITS } from "../lib/constants";
 import { fullName, peso, plural, shortDate, todayISO } from "../lib/format";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import AmenityIcon from "../components/AmenityIcon";
-import { BedIcon, ChatIcon, ChevronLeftIcon, ChevronRightIcon, ImageIcon, MapPinIcon, SearchIcon } from "../components/Icons";
+import { BanIcon, BedIcon, ChatIcon, ChevronLeftIcon, ChevronRightIcon, ImageIcon, InfoIcon, MapPinIcon, SearchIcon, ShieldIcon } from "../components/Icons";
 import { Alert, Button, EmptyState, FieldError, FullBadge, Skel, TextArea, TextField } from "../components/ui";
 import { Page } from "../components/Layout";
 
@@ -78,7 +78,7 @@ export default function ListingDetails() {
             <Fact label="Capacity" value={<>{l.capacity}<span className="text-sm font-normal text-steel"> rooms / beds</span></>} last />
           </dl>
 
-          {l.description && <Section title="About this place"><p className="text-[15px] leading-relaxed whitespace-pre-line text-navy">{l.description}</p></Section>}
+          {l.description && <Section title="About this place"><p className="max-w-[60ch] text-[15px] leading-relaxed whitespace-pre-line text-navy">{l.description}</p></Section>}
 
           <Section title="Amenities">
             {l.amenities?.length ? (
@@ -96,7 +96,7 @@ export default function ListingDetails() {
           </Section>
 
           <Section title="House rules">
-            {l.houseRules ? <p className="text-[15px] leading-relaxed whitespace-pre-line text-navy">{l.houseRules}</p> : <p className="text-[15px] text-steel">No house rules listed. Ask the owner if you have questions.</p>}
+            {l.houseRules ? <p className="max-w-[60ch] text-[15px] leading-relaxed whitespace-pre-line text-navy">{l.houseRules}</p> : <p className="text-[15px] text-steel">No house rules listed. Ask the owner if you have questions.</p>}
           </Section>
 
           <Section title="Owner">
@@ -143,7 +143,7 @@ function Gallery({ photos, name }) {
   const [i, setI] = useState(0);
   if (!photos.length)
     return (
-      <div className="flex h-[420px] flex-col items-center justify-center gap-2 rounded-2xl bg-haze max-md:h-[240px] text-[#7f9cbc]">
+      <div className="flex h-[420px] flex-col items-center justify-center gap-2 rounded-2xl bg-haze max-md:h-[240px] text-hint">
         <ImageIcon size={40} />
         <span className="text-sm font-medium">No photos yet</span>
       </div>
@@ -205,6 +205,18 @@ function ActionPanel({ listing: l, setListing }) {
   const location = useLocation();
   const isMine = user && l.owner?._id === user._id;
 
+  // findorm-loopholes #11: a deactivated owner can't answer, so don't invite requests.
+  if (l.ownerInactive && (!user || user.role === "seeker"))
+    return (
+      <PanelCard>
+        <PriceHeader l={l} />
+        <Alert tone="warning" icon={BanIcon} title="This owner isn’t taking requests right now.">
+          Requests and messages are closed for this listing. Try a similar place nearby.
+        </Alert>
+        <Link to="/" className="press inline-flex h-11 items-center justify-center rounded-[10px] border border-sky-300 text-sm font-medium text-navy hover:bg-haze">Browse other places</Link>
+      </PanelCard>
+    );
+
   if (!user)
     return (
       <PanelCard>
@@ -247,6 +259,16 @@ function ActionPanel({ listing: l, setListing }) {
   return <SeekerPanel l={l} setListing={setListing} />;
 }
 
+/** Owners aren't verified, so remind seekers how deposit scams work (findorm-loopholes #15). */
+function SafetyNote() {
+  return (
+    <p className="flex gap-2 border-t border-haze pt-4 text-xs leading-relaxed text-steel">
+      <ShieldIcon size={16} className="mt-px text-navy" />
+      <span>Never pay a deposit before you’ve visited the place and met the owner in person.</span>
+    </p>
+  );
+}
+
 function SeekerPanel({ l, setListing }) {
   const [tab, setTab] = useState("reserve");
   return (
@@ -264,6 +286,7 @@ function SeekerPanel({ l, setListing }) {
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === "reserve" ? <ReserveForm l={l} setListing={setListing} /> : <InquiryForm l={l} />}
       </div>
+      <SafetyNote />
     </PanelCard>
   );
 }
@@ -273,7 +296,7 @@ function ReserveForm({ l, setListing }) {
   const [moveInDate, setMoveInDate] = useState("");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
-  const [result, setResult] = useState(null); // {kind:'sent'|'dup'|'full'|'error', text}
+  const [result, setResult] = useState(null); // {kind:'sent'|'dup'|'full'|'wait'|'closed'|'error', text}
   const [busy, setBusy] = useState(false);
 
   if (l.isFull && result?.kind !== "sent")
@@ -309,10 +332,13 @@ function ReserveForm({ l, setListing }) {
       toast.success("Reservation request sent");
     } catch (err) {
       const msg = errorMessage(err);
-      if (err.response?.status === 409 && /full/i.test(msg)) {
+      const code = errorCode(err);
+      if (code === "LISTING_FULL") {
         setListing({ isFull: true, availableSlots: 0 });
         setResult({ kind: "full" });
-      } else if (err.response?.status === 409) setResult({ kind: "dup", text: msg });
+      } else if (code === "DUPLICATE_REQUEST") setResult({ kind: "dup" });
+      else if (code === "REQUEST_COOLDOWN") setResult({ kind: "wait", text: msg });
+      else if (code === "OWNER_INACTIVE") setResult({ kind: "closed", text: msg });
       else {
         setErrors(fieldErrors(err));
         setResult({ kind: "error", text: msg });
@@ -326,9 +352,11 @@ function ReserveForm({ l, setListing }) {
     <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
       {result?.kind === "dup" && (
         <Alert tone="warning" title="You already have an open request here.">
-          {result.text} See <Link to="/requests" className="font-medium underline">My Requests</Link>.
+          See it in <Link to="/requests" className="font-medium underline">My Requests</Link>.
         </Alert>
       )}
+      {result?.kind === "wait" && <Alert tone="info" icon={InfoIcon} title={result.text} />}
+      {result?.kind === "closed" && <Alert tone="warning" icon={BanIcon} title={result.text} />}
       {result?.kind === "error" && <Alert title={result.text} />}
       <TextField label="Move-in date" optional type="date" min={todayISO()} value={moveInDate}
         onChange={(e) => { setMoveInDate(e.target.value); setErrors((x) => ({ ...x, moveInDate: undefined })); }} error={errors.moveInDate} disabled={busy} />

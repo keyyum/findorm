@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       select: false,
     },
+    passwordChangedAt: {
+      type: Date,
+      default: null
+    },
     // Cannot be changed after registration; admins only come from the seed script (D-09).
     role: {
       type: String,

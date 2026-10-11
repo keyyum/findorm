@@ -81,7 +81,9 @@ export default function ListingForm({ mode, asAdmin = false }) {
   const [files, setFiles] = useState([]); // {file, url}
   const [photoError, setPhotoError] = useState("");
   const fileInput = useRef(null);
-  const canManagePhotos = !asAdmin; // photo endpoints are owner-only (api-spec)
+  // Owners add and remove photos; admins can only remove one (findorm-loopholes #14).
+  const canAddPhotos = !asAdmin;
+  const canRemovePhotos = true;
 
   useEffect(() => {
     if (!edit) return;
@@ -182,7 +184,7 @@ export default function ListingForm({ mode, asAdmin = false }) {
 
     // Photos after the listing exists (api-spec: POST /listings/:id/photos).
     let photoFailed = "";
-    if (canManagePhotos) {
+    if (removed.length || files.length) {
       try {
         for (const pid of removed) {
           setSavingStep("Removing photos…");
@@ -255,7 +257,7 @@ export default function ListingForm({ mode, asAdmin = false }) {
       {asAdmin && original && (
         <div className="mt-5 max-w-[800px]">
           <Alert tone="info" icon={ShieldIcon} title={`Editing as admin · Owner: ${fullName(original.owner)}`}>
-            Changes save to the owner’s listing. Update available slots here; photos can only be managed by the owner.
+            Changes save to the owner’s listing. You can update available slots and remove a photo that breaks the rules; only the owner can add photos.
           </Alert>
         </div>
       )}
@@ -311,21 +313,21 @@ export default function ListingForm({ mode, asAdmin = false }) {
             placeholder="Curfew, visitors, cooking, quiet hours…" />
         </Card>
 
-        <Card title="Photos" sub={canManagePhotos ? `JPEG, PNG or WebP, up to 5 MB each. ${photoCount} of 10 used.` : "Only the owner can add or remove photos."}>
+        <Card title="Photos" sub={canAddPhotos ? `JPEG, PNG or WebP, up to 5 MB each. ${photoCount} of 10 used.` : "Only the owner can add photos. You can remove one that breaks the rules."}>
           <div className="grid grid-cols-5 gap-3 max-md:grid-cols-3 max-sm:grid-cols-2">
             {existing.filter((p) => !removed.includes(p._id)).map((p) => (
-              <Thumb key={p._id} src={p.url} onRemove={canManagePhotos ? () => setRemoved((r) => [...r, p._id]) : null} disabled={saving} />
+              <Thumb key={p._id} src={p.url} onRemove={canRemovePhotos ? () => setRemoved((r) => [...r, p._id]) : null} disabled={saving} />
             ))}
             {files.map((f, i) => (
               <Thumb key={f.url} src={f.url} isNew onRemove={() => { URL.revokeObjectURL(f.url); setFiles((x) => x.filter((_, j) => j !== i)); }} disabled={saving} />
             ))}
-            {canManagePhotos && photoCount < LIMITS.photos && (
+            {canAddPhotos && photoCount < LIMITS.photos && (
               <button type="button" onClick={() => fileInput.current?.click()} disabled={saving}
                 className="press flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-sky-300 bg-page text-[13px] font-medium text-navy hover:border-navy hover:bg-haze">
                 <PlusIcon /> Add photos
               </button>
             )}
-            {!canManagePhotos && existing.length === 0 && (
+            {!canAddPhotos && existing.length === 0 && (
               <div className="col-span-full flex items-center gap-2 text-sm text-steel"><ImageIcon /> No photos.</div>
             )}
           </div>

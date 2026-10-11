@@ -139,15 +139,14 @@ export default function Home() {
       {/* Landing hero */}
       <section className="hero-photo text-mist" style={{ "--hero-img": `url(${manila})` }} aria-labelledby="hero-h1">
         <div className="mx-auto flex max-w-[1440px] flex-col px-[120px] pt-20 pb-16 max-xl:px-10 max-md:px-4 max-md:pt-10 max-md:pb-10">
-          <span style={rise(0).style} className={`text-xs font-semibold tracking-[0.1em] text-[#8aa9cb] uppercase ${intro ? "rise" : ""}`}>Dorms &amp; boarding houses · all 17 cities</span>
-          <h1 id="hero-h1" style={rise(1).style} className={`${intro ? "rise" : ""} mt-4 max-w-[820px] text-[60px] leading-[1.02] max-lg:text-[48px] max-md:text-[38px] max-md:leading-[1.08] font-semibold tracking-[-0.035em] text-white`}>
+          <h1 id="hero-h1" style={rise(0).style} className={`${intro ? "rise" : ""} max-w-[820px] text-[60px] leading-[1.02] max-lg:text-[48px] max-md:text-[38px] max-md:leading-[1.08] font-semibold tracking-[-0.035em] text-white`}>
             Find your dorm in Metro Manila.
           </h1>
-          <p style={rise(2).style} className={`${intro ? "rise" : ""} mt-5 max-w-[560px] text-lg leading-relaxed text-[#c3d7ea] max-md:text-base`}>
-            Compare rent, slots and amenities, message owners directly, and request a slot. No account needed to browse.
+          <p style={rise(1).style} className={`${intro ? "rise" : ""} mt-5 max-w-[560px] text-lg leading-relaxed text-[#c3d7ea] max-md:text-base`}>
+            Dorms and boarding houses in all 17 cities. Compare rent and slots, message owners, and request a slot.
           </p>
 
-          <form role="search" onSubmit={submitHero} style={rise(3).style} className={`${intro ? "rise" : ""} mt-9 flex h-[72px] w-full max-w-[1000px] items-center rounded-2xl bg-white p-2.5 max-md:mt-7 max-md:h-auto max-md:flex-col max-md:items-stretch max-md:gap-1 shadow-[0_24px_48px_-16px_rgba(5,10,24,0.6)] focus-within:shadow-[0_0_0_3px_rgba(106,143,184,0.55),0_24px_48px_-16px_rgba(5,10,24,0.6)]`}>
+          <form role="search" onSubmit={submitHero} style={rise(2).style} className={`${intro ? "rise" : ""} mt-9 flex h-[72px] w-full max-w-[1000px] items-center rounded-2xl bg-white p-2.5 max-md:mt-7 max-md:h-auto max-md:flex-col max-md:items-stretch max-md:gap-1 shadow-[0_24px_48px_-16px_rgba(5,10,24,0.6)] focus-within:shadow-[0_0_0_3px_rgba(106,143,184,0.55),0_24px_48px_-16px_rgba(5,10,24,0.6)]`}>
             <label className="relative flex h-[52px] w-[260px] shrink-0 items-center text-steel max-md:w-full max-md:border-b max-md:border-line">
               <span className="sr-only">City</span>
               <MapPinIcon className="absolute left-4" />
@@ -162,12 +161,12 @@ export default function Home() {
               <span className="sr-only">Keyword</span>
               <SearchIcon className="absolute left-[18px]" />
               <input type="search" value={qDraft} onChange={(e) => setQDraft(e.target.value)} maxLength={100} placeholder="Name, street or area, e.g. Sampaloc"
-                className="h-[52px] w-full bg-transparent pr-4 pl-[50px] text-base text-ink placeholder:text-[#7f9cbc] focus:outline-none" />
+                className="h-[52px] w-full bg-transparent pr-4 pl-[50px] text-base text-ink placeholder:text-hint focus:outline-none" />
             </label>
             <Button type="submit" size="lg" className="!h-[52px] !px-8 !text-base max-md:mt-1 max-md:w-full">Search</Button>
           </form>
 
-          <div style={rise(4).style} className={`${intro ? "rise" : ""} mt-5 flex flex-wrap items-center gap-2.5 text-[13px] text-[#a8c2dc]`}>
+          <div style={rise(3).style} className={`${intro ? "rise" : ""} mt-5 flex flex-wrap items-center gap-2.5 text-[13px] text-[#a8c2dc]`}>
             <span>Popular:</span>
             {POPULAR.map((p) => (
               <button key={p.label} type="button" onClick={() => { update({ city: p.city, q: p.q }); resultsRef.current?.scrollIntoView({ behavior: "smooth" }); }}

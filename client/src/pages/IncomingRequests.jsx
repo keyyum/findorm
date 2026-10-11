@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import api, { errorMessage } from "../lib/api";
+import { Link, useNavigate } from "react-router-dom";
+import api, { errorCode, errorMessage } from "../lib/api";
+import { LIMITS } from "../lib/constants";
 import { dateOnly, fullName, initials, plural, shortDate } from "../lib/format";
 import { useToast } from "../context/ToastContext";
 import { Page } from "../components/Layout";
 import { REQUESTS_CHANGED } from "../components/Navbar";
 import StatusBadge from "../components/StatusBadge";
-import { BedIcon, CheckCircleIcon, CloseIcon, RefreshIcon, WarningIcon } from "../components/Icons";
+import { BedIcon, ChatIcon, CheckCircleIcon, CloseIcon, RefreshIcon, SendIcon, WarningIcon } from "../components/Icons";
 import { Avatar, Button, ConfirmDialog, EmptyState, FullBadge, PageTitle, Pagination, SelectField, Skel, useStagger } from "../components/ui";
 
 const LIMIT = 10;
@@ -51,10 +52,10 @@ export default function IncomingRequests() {
       await api.patch(`/reservations/${r._id}/${action}`);
       toast.success(action === "accept" ? `Accepted ${r.seeker?.firstName}’s request` : `Rejected ${r.seeker?.firstName}’s request`);
     } catch (err) {
-      const msg = errorMessage(err);
-      if (err.response?.status === 409 && /full|slot/i.test(msg)) toast.error("No slots left. Raise available slots in My Listings to accept more.");
-      else if (err.response?.status === 409) toast.error("This request was already answered or withdrawn.");
-      else toast.error(msg);
+      const code = errorCode(err);
+      if (code === "LISTING_FULL") toast.error("No slots left. Raise available slots in My Listings to accept more.");
+      else if (code === "NOT_PENDING") toast.error("This request was already answered or withdrawn.");
+      else toast.error(errorMessage(err));
     } finally {
       setBusy(false);
       setConfirm(null);
@@ -131,6 +132,7 @@ export default function IncomingRequests() {
                           </Button>
                         </div>
                       )}
+                      <MessageSeeker r={r} />
                     </div>
                   </li>
                 );
@@ -157,5 +159,55 @@ export default function IncomingRequests() {
           : "The seeker will see this request as Rejected. Slots don’t change. This can’t be undone."}
       </ConfirmDialog>
     </Page>
+  );
+}
+
+/**
+ * Lets an owner write to a seeker first, from their request (findorm-loopholes #5).
+ * Uses the same thread the seeker would use, so nothing is split in two.
+ */
+function MessageSeeker({ r }) {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [body, setBody] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const trimmed = body.trim();
+  const first = r.seeker?.firstName || "the seeker";
+
+  async function send(e) {
+    e.preventDefault();
+    if (!trimmed || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const { data } = await api.post("/inquiries", { reservationId: r._id, body: trimmed });
+      navigate(`/inquiries/${data._id}`);
+    } catch (err) {
+      setError(errorMessage(err, "Couldn’t send. Try again."));
+      setBusy(false);
+    }
+  }
+
+  if (!open)
+    return (
+      <div className="flex justify-end">
+        <Button variant="quiet" size="sm" onClick={() => setOpen(true)}><ChatIcon size={16} /> Message {first}</Button>
+      </div>
+    );
+
+  return (
+    <form onSubmit={send} className="rise flex flex-col gap-2 border-t border-haze pt-3">
+      <label htmlFor={`msg-${r._id}`} className="text-sm font-medium">Message {first}</label>
+      <textarea id={`msg-${r._id}`} rows={3} autoFocus maxLength={LIMITS.messageBody} value={body} disabled={busy}
+        onChange={(e) => { setBody(e.target.value); setError(""); }}
+        placeholder="Hi! Can you visit on Saturday to see the room?"
+        className="w-full resize-y rounded-md border border-sky bg-white px-3 py-2.5 text-[15px] leading-relaxed text-ink transition-colors placeholder:text-hint hover:border-navy" />
+      {error && <p role="alert" className="text-[13px] text-danger">{error}</p>}
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" size="sm" onClick={() => { setOpen(false); setBody(""); setError(""); }} disabled={busy}>Cancel</Button>
+        <Button type="submit" size="sm" loading={busy} disabled={!trimmed}>{!busy && <SendIcon size={16} />} {busy ? "Sending…" : "Send"}</Button>
+      </div>
+    </form>
   );
 }

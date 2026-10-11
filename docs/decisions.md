@@ -127,4 +127,60 @@ A listing's `genderCategory` is `Male`, `Female`, or `Any` (mixed). The search f
 
 Tokens are JWTs stored in `localStorage` under `findorm_token` (already set up in `client/src/lib/api.js`). Logging out means deleting the token from the browser. There is no server logout endpoint. Tokens expire after `JWT_EXPIRES_IN` (7 days by default).
 
-**Why:** It matches the existing client code and needs no token blacklist on the server. D-08 still lets an admin cut off a user immediately, because the server checks `isActive` on every request.
+**Why:** It matches the existing client code and needs no token blacklist on the server. D-08 still lets an admin cut off a user immediately, because the server checks `isActive` on every request, and D-14 revokes old tokens when the password changes.
+
+## D-14 · Changing the password signs out other devices; changing the email needs the password
+
+**Affects:** FR-03
+
+The user record stores `passwordChangedAt`. A token issued before it is refused with 401 `PASSWORD_CHANGED`, so changing the password signs out every other device. The device that made the change gets a fresh token in the response and stays logged in. Changing the email (the login name) needs `currentPassword`. A wrong current password is a 400 on that field, never a 401, so a 401 always means the session is over.
+
+**Why:** A stolen token used to stay valid for up to 7 days even after a password change, and could change the email to take the account over (findorm-loopholes #3, #6, #7).
+
+## D-15 · Rate limits on login, sign-up and messages
+
+**Affects:** FR-01, FR-02, FR-11, FR-12
+
+Per network: 10 failed logins and 20 sign-ups per 15 minutes. Per user: 30 new messages per 10 minutes. Going over returns 429 `RATE_LIMITED`. Successful logins don't count, so people who type their password right are never locked out. The numbers can be changed in `.env` (`LOGIN_RATE_LIMIT`, `REGISTER_RATE_LIMIT`, `MESSAGE_RATE_LIMIT`), and `RATE_LIMIT=off` turns them off for repeated test runs.
+
+**Why:** Without them, anyone can try thousands of passwords or flood an owner with messages (findorm-loopholes #8, #13).
+
+## D-16 · A deactivated owner's listings are hidden and closed
+
+**Affects:** FR-07, FR-10, FR-11, FR-13, FR-17
+
+Search leaves out listings whose owner is deactivated. The details page still opens (for seekers who already have a request there) and says requests are closed (`ownerInactive: true`). New requests and inquiries on them are refused with 409 `OWNER_INACTIVE`. Admins still see these listings. Reactivating the owner brings them back.
+
+**Why:** A deactivated owner can't answer, so seekers would wait forever (findorm-loopholes #11).
+
+## D-17 · Owners can't delete a listing that has accepted reservations
+
+**Affects:** FR-04, FR-17
+
+An owner deleting a listing with at least one Accepted reservation gets 409 `LISTING_HAS_ACCEPTED`; they can set available slots to 0 instead. Admins can still delete it, to moderate. This narrows D-11.
+
+**Why:** Deleting removes the seeker's accepted reservation and the conversation, which is their only proof of the deal (findorm-loopholes #12).
+
+## D-18 · 24-hour wait before re-requesting after a rejection
+
+**Affects:** FR-13
+
+After an owner rejects a request, the same seeker can request the same listing again only after 24 hours (409 `REQUEST_COOLDOWN` before that).
+
+**Why:** Otherwise a seeker can re-send a rejected request again and again (findorm-loopholes #13).
+
+## D-19 · Owners can message a seeker first, from a reservation request
+
+**Affects:** FR-11, FR-12, FR-14
+
+`POST /api/inquiries` also accepts an owner with a `reservationId` for one of their requests. It opens (or adds to) the same thread the seeker would use (D-07), so there is still one conversation per seeker and listing.
+
+**Why:** Owners often need to ask a question before accepting, but could only reply if the seeker wrote first (findorm-loopholes #5).
+
+## D-20 · Admins can remove a single photo
+
+**Affects:** FR-05, FR-17
+
+Admins may call `DELETE /api/listings/:id/photos/:photoId`. Adding photos stays owner-only.
+
+**Why:** Before, the only way to take down an inappropriate photo was to delete the whole listing (findorm-loopholes #14).
