@@ -114,7 +114,7 @@ export default function AdminUsers() {
           </div>
         ) : (
           <table className="w-full min-w-[880px] table-fixed border-collapse text-sm">
-            <colgroup><col /><col className="w-[23%]" /><col className="w-[112px]" /><col className="w-[72px]" /><col className="w-[112px]" /><col className="w-[76px]" /><col className="w-[136px]" /></colgroup>
+            <colgroup><col /><col className="w-[22%]" /><col className="w-[108px]" /><col className="w-[72px]" /><col className="w-[112px]" /><col className="w-[88px]" /><col className="w-[136px]" /></colgroup>
             <thead className="bg-page">
               <tr>
                 <th scope="col" className={`${th} pl-5`}>Name</th><th scope="col" className={th}>Email</th><th scope="col" className={th}>Phone</th>
