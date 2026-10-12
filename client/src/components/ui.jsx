@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeClosedIcon, EyeIcon, WarningIcon } from "./Icons";
+import { CheckCircleIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EyeClosedIcon, EyeIcon, InfoIcon, WarningIcon } from "./Icons";
 
 /* ---------- Buttons ---------- */
 
@@ -165,7 +165,10 @@ export function TextArea({ label, error, hint, optional, maxLength, value = "", 
 
 /* ---------- Feedback ---------- */
 
-export function Alert({ tone = "danger", title, children, icon: Icon = WarningIcon }) {
+const alertIcons = { success: CheckCircleIcon, info: InfoIcon };
+
+export function Alert({ tone = "danger", title, children, icon }) {
+  const Icon = icon || alertIcons[tone] || WarningIcon;
   const tones = {
     danger: "bg-danger-bg border-danger text-danger",
     warning: "bg-warning-bg border-warning text-warning",

@@ -51,7 +51,7 @@ The system does **not** process online payments or deposits, generate lease cont
 | Database | MongoDB with Mongoose |
 | Auth | bcrypt, JSON Web Token (JWT) |
 | Image uploads | Multer with Cloudinary |
-| Tooling | Visual Studio Code, Git + GitHub, Postman |
+| Tooling | Visual Studio Code, Git + GitHub, Postman, GitHub Actions, PlantUML |
 
 ## Repository layout
 
@@ -59,7 +59,7 @@ The system does **not** process online payments or deposits, generate lease cont
 findorm/
 ├── client/     # React front end
 ├── server/     # Node.js + Express API
-├── docs/       # Requirements, proposal, and planning documents
+├── docs/       # Requirements, design decisions, API spec, tests, diagrams
 └── README.md
 ```
 
@@ -91,7 +91,7 @@ npm install
 npm run dev             # http://localhost:5173
 ```
 
-Open http://localhost:5173. The page reports whether it can reach the API — if it says connected, your setup works.
+Open http://localhost:5173. For sample data, run `npm run seed-demo` and then `npm run seed-dorms` from `server/` (see [docs/testing.md](docs/testing.md)).
 
 Requests to `/api/...` from the front end are proxied to port 5050 by Vite, so there is no CORS setup to do in development.
 
@@ -105,23 +105,38 @@ Never commit a real `.env` file — only `.env.example` with placeholder values.
 
 ## Current state
 
-Scaffolding only. Both halves build and run, and the front end can talk to the API, but **no functional requirement is implemented yet**. Each FR is an open GitHub issue — pick one up, branch from `main`, and open a pull request.
+All 17 functional requirements (FR-01 to FR-17) are implemented across the front end and back end, with role-based access for seekers, owners, and the administrator. The API has 27 endpoints (see [api-spec.md](docs/api-spec.md)), and the automated suite in `server/tests/api.test.mjs` covers 55 test cases (see [testing.md](docs/testing.md)).
 
 Where things go:
 
 ```
 server/
-├── config/      database connection
+├── config/      database connection and shared value lists
 ├── models/      Mongoose schemas
 ├── routes/      URL → controller mapping
-├── controllers/ request handlers
-└── middleware/  auth, validation, error handling
+├── controllers/ request handlers and business rules
+├── middleware/  auth, rate limits, uploads, error handling
+├── scripts/     create-admin, seed-demo, seed-dorms (+ seed-data/)
+└── tests/       automated API test suite
 
 client/src/
-├── pages/       one component per screen
+├── pages/       one component per screen (admin/ for the administrator)
 ├── components/  shared UI pieces
-└── lib/         api.js — the shared axios client
+├── context/     AuthContext (logged-in user)
+└── lib/         api.js (shared axios client) and shared constants
 ```
+
+## Testing
+
+The API test suite needs a running server and an **empty** MongoDB database. Full steps, rate-limit notes, and the demo-data scripts are in [docs/testing.md](docs/testing.md).
+
+```bash
+cd server
+ADMIN_EMAIL=admin@findorm.test ADMIN_PASSWORD='AdminPass2026!' npm run create-admin
+npm run test:api        # with the server running
+```
+
+GitHub Actions runs the client build and the API suite against a temporary MongoDB on every pull request (`.github/workflows/ci.yml`).
 
 ## Development approach
 
@@ -134,5 +149,7 @@ Agile with Scrum. Modules are built in stages: account and role management → p
 - [Data model](docs/data-model.md) — collections, fields, and validation rules
 - [API specification](docs/api-spec.md) — every endpoint, who can call it, and what it returns
 - [Acceptance criteria](docs/acceptance-criteria.md) — how to check each requirement is done
+- [Testing](docs/testing.md) — the automated API suite, demo data, and diagrams
+- [UML diagrams](docs/diagrams/) — PlantUML sources and rendered images
 - [Project proposal](docs/proposal.md)
 - [Contributing guide](CONTRIBUTING.md)
