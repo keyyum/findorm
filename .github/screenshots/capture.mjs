@@ -23,7 +23,7 @@ async function login(page, email, password) {
   const page = await (await browser.newContext({ viewport: view })).newPage();
   await login(page, process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD);
   await page.goto(`${BASE}/admin/users`);
-  await page.getByText("maria@findorm.test").first().waitFor();
+  await page.getByRole("button", { name: /Deactivate/ }).first().waitFor();
   await page.waitForTimeout(800);
   await page.screenshot({ path: `${OUT}/fig-12-admin-users.png` });
 }
