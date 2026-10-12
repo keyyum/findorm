@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  api:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    defaults:
+      run:
+        working-directory: server
+    env:
+      MONGO_URI: mongodb://127.0.0.1:27017/findorm_ci
+      JWT_SECRET: ci-only-secret
+      PORT: 5050
+      ADMIN_EMAIL: admin@findorm.test
+      ADMIN_PASSWORD: AdminPass2026!
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run create-admin
+      - name: Start the API
+        run: |
+          node index.js > api.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5050/api/health && exit 0
+            sleep 1
+          done
+          cat api.log
+          exit 1
+      - run: node tests/api.test.mjs results.json
+      - name: Save test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results
+          path: server/results.json
+          if-no-files-found: ignore
+      - name: Show API log on failure
+        if: failure()
+        run: cat api.log

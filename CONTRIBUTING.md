@@ -63,5 +63,6 @@ Assignments are tracked in GitHub Issues — one issue per requirement.
 ## Before you push
 
 - The app runs without console errors.
+- `npm run build` passes in `client/`, and `npm run test:api` passes in `server/` (see [docs/testing.md](docs/testing.md)). GitHub Actions runs both on every pull request.
 - Your feature matches the wording of its requirement in [docs/requirements.md](docs/requirements.md).
 - No `.env`, `node_modules/`, or stray debug logs in the diff.
